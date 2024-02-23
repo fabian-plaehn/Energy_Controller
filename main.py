@@ -16,11 +16,9 @@ class EnergyData:
     csmp: int
     batterypower: int
     batterystatus: int
-    message_id = int(time.time())
 
 
-
-def print_hi(name):
+def main():
     driver = webdriver.Firefox()
     driver.get("https://www.sunnyportal.com/Templates/Start.aspx?ReturnUrl=%2fFixedPages%2fDashboard.aspx")
 
@@ -51,9 +49,7 @@ def print_hi(name):
             pass
 
 
-
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
+    main()
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+
