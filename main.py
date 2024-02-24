@@ -1,55 +1,75 @@
 import time
-from dataclasses import dataclass, asdict
-from PyP100 import PyP100
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as ec
-from hidden import username, password
+from typing import List
 
-@dataclass
-class EnergyData:
-    pvpower: int
-    feedin: int
-    selfcsmp: int
-    gridcsmp: int
-    csmp: int
-    batterypower: int
-    batterystatus: int
+from sunny.CSunny import EnergyController
+from tapo.CTapo import Mining_Stacks, MiningStack
+from utils import log, maximize_with_constraint, minimize_with_constraint
 
 
 def main():
-    driver = webdriver.Firefox()
-    driver.get("https://www.sunnyportal.com/Templates/Start.aspx?ReturnUrl=%2fFixedPages%2fDashboard.aspx")
-
-
-    ## LOGIN ##
-    WebDriverWait(driver, 5).until(ec.element_to_be_clickable((By.ID, "onetrust-reject-all-handler"))).click()
-    driver.find_element(By.ID, "txtUserName").send_keys(username)
-    driver.find_element(By.ID, "txtPassword").send_keys(password)
-    time.sleep(1)
-    WebDriverWait(driver, 5).until(ec.element_to_be_clickable((By.ID, "ctl00_ContentPlaceHolder1_Logincontrol1_LoginBtn"))).click()
-    WebDriverWait(driver, 5).until(ec.element_to_be_clickable((By.XPATH, "/html/body/div[4]/div/div/div[2]/table/tbody/tr[2]/td[1]/a"))).click()
+    # init classes
+    CEnergyController = EnergyController()
 
     while True:
-        try:
-            pvpower = int(driver.find_element(by=By.ID, value='pvpower').text.split(" ")[0].replace(",", "."))
-            feedin = int(driver.find_element(by=By.ID, value='feedin').text.split(" ")[0].replace(",", "."))
-            selfcsmp = int(driver.find_element(by=By.ID, value='selfcsmp').text.split(" ")[0].replace(",", "."))
-            gridcsmp = int(driver.find_element(by=By.ID, value='gridcsmp').text.split(" ")[0].replace(",", "."))
-            csmp = int(driver.find_element(by=By.ID, value='csmp').text.split(" ")[0].replace(",", "."))
+        CEnergyData = CEnergyController.get_data()
+        if CEnergyData is None:
+            log("No data available", "info")
+            continue
 
-            batterypower = int(driver.find_element(by=By.ID, value='ctl00_ContentPlaceHolder1_SelfConsumption_Status1_BatteryPower').text.split(" ")[0])
-            batterystatus = int(driver.find_element(by=By.ID, value='ctl00_ContentPlaceHolder1_SelfConsumption_Status1_BatteryChargeStatus').text.split(" ")[0])
+        if CEnergyData.pvpower > CEnergyData.csmp:
+            usable_power = CEnergyData.pvpower - CEnergyData.csmp
+        elif CEnergyData.batterystatus > 10:  # draw until x percent battery
+            usable_power = CEnergyData.max_battery_power - CEnergyData.batterypower
+        else:
+            usable_power = CEnergyData.pvpower - CEnergyData.csmp  # negative
 
-            energy_data = EnergyData(pvpower, feedin, selfcsmp, gridcsmp, csmp, batterypower, batterystatus)
-            print(energy_data)
-            time.sleep(5)
-        except ValueError:
-            pass
+        for stack in Mining_Stacks:
+            stack.update_coin()
+
+        log("Usable Power: " + str(usable_power), "info")
+
+        if usable_power > 0:  # turn on rigs
+            relevant_stacks = [(stack, stack.watt, stack.profit) for stack in Mining_Stacks if (not stack.get_status() and not stack.always_on_stacks)]  # has to be off to be turned on
+            if len(relevant_stacks) == 0:  # maybe even turn on profit over efficiency
+                for stack in Mining_Stacks:
+                    if not stack.efficient_sheet:
+                        continue
+
+                    if usable_power < stack.efficient_watt_difference:
+                        continue
+
+                    usable_power -= stack.efficient_watt_difference
+                    #  enough power and profit sheet not activated yet
+
+                    log(f"turn on profit sheet for stack: {stack.name}", "info")
+                    stack.efficient_sheet = False
+
+            stacks_to_turn_on: List[MiningStack] = [x[0] for x in maximize_with_constraint(relevant_stacks, abs(usable_power))]
+            for stack in stacks_to_turn_on:
+                stack.turn_on()
+        else:  # turn off rigs
+            # switch from profit to efficiency
+            for stack in Mining_Stacks:
+                if stack.efficient_sheet:
+                    continue
+
+                if usable_power > 0:
+                    continue
+                #  enough power and profit sheet not activated yet
+                usable_power += stack.efficient_watt_difference
+                log(f"turn on efficient sheet for stack: {stack.name}", "info")
+                stack.efficient_sheet = True
+
+            relevant_stacks = [(stack, stack.watt, stack.profit) for stack in Mining_Stacks if (stack.get_status() and not stack.always_on_stacks)]  # has to be on to be turned off
+            stacks_to_turn_off: List[MiningStack] = [x[0] for x in minimize_with_constraint(relevant_stacks, abs(usable_power))]
+            for stack in stacks_to_turn_off:
+                stack.turn_off()
+
+        for stack in Mining_Stacks:
+            stack.set_sheet()
+
+        time.sleep(120)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
-
-
