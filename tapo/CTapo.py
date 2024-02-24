@@ -1,6 +1,6 @@
 import time
 from PyP100 import PyP100
-from hidden import tapo_email, tapo_password, tapo_ip_1, HIVE_API_KEY, FARM_NAME_B, FARM_NAME_A
+from hidden.hidden import tapo_email, tapo_password, tapo_ip_1, HIVE_API_KEY, FARM_NAME_B, FARM_NAME_A
 from coins.Coins import coins
 from HiveOS.HiveOS import Hive
 from utils import log
