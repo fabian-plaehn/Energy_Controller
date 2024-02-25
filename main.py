@@ -18,12 +18,14 @@ def main():
             logger("No data available", "info")
             continue
 
+
         if CEnergyData.pvpower > CEnergyData.csmp:
             usable_power = CEnergyData.pvpower - CEnergyData.csmp
         elif CEnergyData.batterystatus > 20:  # draw until x percent battery
-            usable_power = 0
+            usable_power = 0  # dont add or shutdown rigs
         else:
             usable_power = CEnergyData.pvpower - CEnergyData.csmp  # negative
+
 
         for coin in coins:
             coin.get_profitability()

@@ -197,7 +197,7 @@ class MiningStack:
         print(coins)
         self.efficient_coin = coins[0].name
         self.watt_efficient = coins[0].watt * self.number_pcs * 1000
-        self.watt_even = coins[0].break_even_watt * self.watt / 1000
+        self.watt_even = coins[0].break_even_watt * self.number_pcs
 
         self.efficient_watt_difference = self.watt - self.watt_efficient
 
