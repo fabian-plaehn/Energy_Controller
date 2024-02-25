@@ -159,7 +159,7 @@ class MiningStack:
         else:
             self.p100 = P100(ip, tapo_email, tapo_password)
         self.name = self.p100.getDeviceName()
-
+        print(self.name, ip)
         self.number_pcs = number_pcs
         self.time_turn_on = time.time()
         self.time_turn_off = time.time()
@@ -221,10 +221,16 @@ class MiningStack:
             self.last_fs = fs["id"]
 
 
-Mining_Stack_01 = MiningStack(6, ip=tapo_ip_1, CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_H, available_worker_ids=None), always_on_stacks=True)
-Mining_Stack_02 = MiningStack(6, ip=tapo_ip_1, CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_B, available_worker_ids=None), always_on_stacks=False)
+Mining_Stack_01 = MiningStack(6, ip="192.168.0.100", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_H, available_worker_ids=[8395042, 8394783, 8436278, 8361530, 8397124, 8395108]))
+time.sleep(1)
 
-Mining_Stacks = [Mining_Stack_01, Mining_Stack_02]
+Mining_Stack_03 = MiningStack(6, ip="192.168.0.102", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_H, available_worker_ids=[8327057, 8395188, 8616656, 8395138, 8395190, 8436296]))
+time.sleep(1)
+Mining_Stack_02 = MiningStack(6, ip="192.168.0.101", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_H, available_worker_ids=[8319532, 8397123, 8307350, 8327018, 8327118,8317656]), always_on_stacks=True)
+time.sleep(1)
+Mining_Stack_04 = MiningStack(6, ip="192.168.0.100", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_B, available_worker_ids=None), always_on_stacks=False)
+
+Mining_Stacks = [Mining_Stack_01, Mining_Stack_02,Mining_Stack_03,Mining_Stack_04]
 
 
 
