@@ -4,10 +4,12 @@ from typing import List
 from sunny.CSunny import EnergyController
 from tapo.CTapo import Mining_Stacks, MiningStack
 from utils import logger, maximize_with_constraint, minimize_with_constraint
-
+from coins.Coins import coins
 
 def main():
     # init classes
+    
+    
     CEnergyController = EnergyController()
 
     while True:
@@ -18,10 +20,14 @@ def main():
 
         if CEnergyData.pvpower > CEnergyData.csmp:
             usable_power = CEnergyData.pvpower - CEnergyData.csmp
-        elif CEnergyData.batterystatus > 10:  # draw until x percent battery
+        elif CEnergyData.batterystatus > 30:  # draw until x percent battery
             usable_power = CEnergyData.max_battery_power - CEnergyData.batterypower
         else:
             usable_power = CEnergyData.pvpower - CEnergyData.csmp  # negative
+
+        for coin in coins:
+            coin.get_profitability()
+            print(coin.name, coin.revenue, coin.profitability, coin.break_even_watt, coin.price, coin.network_hashrate, coin.difficulty)
 
         for stack in Mining_Stacks:
             stack.update_coin()

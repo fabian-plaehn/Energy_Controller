@@ -1,6 +1,6 @@
 import time
 #from PyP100 import PyP100
-from hidden.hidden import tapo_email, tapo_password, tapo_ip_1, HIVE_API_KEY, FARM_NAME_B, FARM_NAME_A
+from hidden.hidden import tapo_email, tapo_password, tapo_ip_1, HIVE_API_KEY, FARM_NAME_B, FARM_NAME_H
 from coins.Coins import coins
 from HiveOS.HiveOS import Hive
 from utils import logger
@@ -151,7 +151,7 @@ class P100(Switchable):
 
 
 class MiningStack:
-    def __init__(self, number_pcs, ip, CHive: Hive, always_on_stacks=False):
+    def __init__(self, number_pcs, ip, CHive: Hive, always_on_stacks=False, efficient_sheet=True):
 
         if always_on_stacks:
             logger("Always On Stacks", "info")
@@ -168,7 +168,7 @@ class MiningStack:
         self.watt_even = 0
         self.watt_efficient = 0
         self.efficient_watt_difference = 0
-        self.efficient_sheet = True
+        self.efficient_sheet = efficient_sheet
         self.profit_coin = None
         self.efficient_coin = None
         self.CHive = CHive
@@ -187,9 +187,8 @@ class MiningStack:
         self.time_turn_off = time.time()
 
     def update_coin(self):
-        for coin in coins:
-            coin.get_profitability()
         coins.sort(key=lambda x: x.profitability, reverse=True)
+        print(coins)
         self.profit_coin = coins[0].name
         self.profit = coins[0].profitability * self.number_pcs
         self.watt = coins[0].watt * self.number_pcs
@@ -222,8 +221,8 @@ class MiningStack:
             self.last_fs = fs["id"]
 
 
-Mining_Stack_01 = MiningStack(6, ip=tapo_ip_1, CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_A, available_worker_ids=None), always_on_stacks=True)
-Mining_Stack_02 = MiningStack(6, ip=tapo_ip_1, CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_B, available_worker_ids=None), always_on_stacks=True)
+Mining_Stack_01 = MiningStack(6, ip=tapo_ip_1, CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_H, available_worker_ids=None), always_on_stacks=True)
+Mining_Stack_02 = MiningStack(6, ip=tapo_ip_1, CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_B, available_worker_ids=None), always_on_stacks=False)
 
 Mining_Stacks = [Mining_Stack_01, Mining_Stack_02]
 
