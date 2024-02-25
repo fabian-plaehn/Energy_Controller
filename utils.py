@@ -6,7 +6,7 @@ from itertools import permutations
 import numpy as np
 _debug = False
 _info = True
-_trace = True
+_trace = False
 
 
 def logger(info, level='debug'):
@@ -32,7 +32,7 @@ def maximize_with_constraint(tlist: List[Tuple[object, float, float]], constrain
     max_elements = []
     for i in range(len(tlist)):
         for j in permutations(tlist, i + 1):
-            if constraint_first_number >= sum([x[1] for x in j]):
+            if constraint_first_number >= sum([x[1] for x in j]):  # if rigs need less than contraint -> viable
                 if sum(x[2] for x in j) > max_sum:
                     max_elements = j
 
@@ -44,7 +44,7 @@ def minimize_with_constraint(tlist: List[Tuple[object, float, float]], constrain
     min_elements = []
     for i in range(len(tlist)):
         for j in permutations(tlist, i + 1):
-            if constraint_first_number >= sum([x[1] for x in j]):
+            if constraint_first_number <= sum([x[1] for x in j]): # if rigs needs more than contraint -> viable
                 if sum(x[2] for x in j) < min_sum:
                     min_elements = j
 

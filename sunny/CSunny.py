@@ -1,3 +1,5 @@
+import os
+import sys
 import time
 from dataclasses import dataclass
 from selenium import webdriver
@@ -33,20 +35,28 @@ class EnergyController:
 
     def get_data(self):
         try:
-            pvpower = int(self.driver.find_element(by=By.ID, value='pvpower').text.split(" ")[0].replace(",", "."))
-            feedin = int(self.driver.find_element(by=By.ID, value='feedin').text.split(" ")[0].replace(",", "."))
-            selfcsmp = int(self.driver.find_element(by=By.ID, value='selfcsmp').text.split(" ")[0].replace(",", "."))
-            gridcsmp = int(self.driver.find_element(by=By.ID, value='gridcsmp').text.split(" ")[0].replace(",", "."))
-            csmp = int(self.driver.find_element(by=By.ID, value='csmp').text.split(" ")[0].replace(",", "."))
+            pvpower = int(self.driver.find_element(by=By.ID, value='pvpower').text.split(" ")[0].replace(",", ".").replace(" ", ""))
+            feedin = int(self.driver.find_element(by=By.ID, value='feedin').text.split(" ")[0].replace(",", ".").replace(" ", ""))
+            selfcsmp = int(self.driver.find_element(by=By.ID, value='selfcsmp').text.split(" ")[0].replace(",", ".").replace(" ", ""))
+            gridcsmp = int(self.driver.find_element(by=By.ID, value='gridcsmp').text.split(" ")[0].replace(",", ".").replace(" ", ""))
+            csmp = int(self.driver.find_element(by=By.ID, value='csmp').text.split(" ")[0].replace(",", ".").replace(" ", ""))
 
             batterypower = int(self.driver.find_element(by=By.ID, value='ctl00_ContentPlaceHolder1_SelfConsumption_Status1_BatteryPower').text.split(" ")[0])
             batterystatus = int(self.driver.find_element(by=By.ID, value='ctl00_ContentPlaceHolder1_SelfConsumption_Status1_BatteryChargeStatus').text.split(" ")[0])
 
             energy_data = EnergyData(pvpower, feedin, selfcsmp, gridcsmp, csmp, batterypower, batterystatus)
             return energy_data
-        except ValueError:
-            #print(int(self.driver.find_element(by=By.ID, value='pvpower').text.split(" ")[0].replace(",", ".")))
+        except ValueError as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print(exc_type, fname, exc_tb.tb_lineno)
             return None
 
+
+if __name__ == "__main__":
+    test_C = EnergyController()
+    while True:
+        print(test_C.get_data())
+        time.sleep(5)
 
 

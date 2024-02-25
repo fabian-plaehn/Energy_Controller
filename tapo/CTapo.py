@@ -151,15 +151,16 @@ class P100(Switchable):
 
 
 class MiningStack:
-    def __init__(self, number_pcs, ip, CHive: Hive, always_on_stacks=False, efficient_sheet=True):
+    def __init__(self, number_pcs, ip, CHive: Hive, always_on_stacks=False, efficient_sheet=True, always_profit=False, always_efficient=False):
 
         if always_on_stacks:
             logger("Always On Stacks", "info")
             self.p100 = Always_On_P100()
         else:
+            print(tapo_email, tapo_password)
             self.p100 = P100(ip, tapo_email, tapo_password)
         self.name = self.p100.getDeviceName()
-        print(self.name, ip)
+        #print(self.name, ip, self.p100.get_status())
         self.number_pcs = number_pcs
         self.time_turn_on = time.time()
         self.time_turn_off = time.time()
@@ -175,6 +176,8 @@ class MiningStack:
         self.all_fs = self.CHive.get_all_fs()
         self.last_fs = 0
         self.always_on_stacks = always_on_stacks
+        self.always_profit = always_profit
+        self.always_efficient = always_efficient
 
     def turn_on(self):
         logger("Turning on" + str(self.p100.getDeviceName()), "info")
@@ -188,13 +191,11 @@ class MiningStack:
 
     def update_coin(self):
         coins.sort(key=lambda x: x.profitability, reverse=True)
-        print(coins)
         self.profit_coin = coins[0].name
         self.profit = coins[0].profitability * self.number_pcs
         self.watt = coins[0].watt * self.number_pcs * 1000
 
         coins.sort(key=lambda x: x.break_even_watt, reverse=True)
-        print(coins)
         self.efficient_coin = coins[0].name
         self.watt_efficient = coins[0].watt * self.number_pcs * 1000
         self.watt_even = coins[0].break_even_watt * self.number_pcs
@@ -208,7 +209,7 @@ class MiningStack:
         if not self.p100.get_status():
             return
 
-        if self.efficient_sheet:
+        if (self.efficient_sheet or self.always_efficient) and not self.always_profit:
             logger(f"Set efficient Sheet {self.efficient_coin}", "info")
             fs = [fs for fs in self.all_fs if fs["name"] == self.efficient_coin][0]
         else:
@@ -222,15 +223,26 @@ class MiningStack:
 
 
 Mining_Stack_01 = MiningStack(6, ip="192.168.0.100", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_H, available_worker_ids=[8395042, 8394783, 8436278, 8361530, 8397124, 8395108]))
-time.sleep(1)
-
 Mining_Stack_03 = MiningStack(6, ip="192.168.0.102", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_H, available_worker_ids=[8327057, 8395188, 8616656, 8395138, 8395190, 8436296]))
-time.sleep(1)
-Mining_Stack_02 = MiningStack(6, ip="192.168.0.101", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_H, available_worker_ids=[8319532, 8397123, 8307350, 8327018, 8327118,8317656]), always_on_stacks=True)
-time.sleep(1)
-Mining_Stack_04 = MiningStack(6, ip="192.168.0.100", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_B, available_worker_ids=None), always_on_stacks=False)
 
-Mining_Stacks = [Mining_Stack_01, Mining_Stack_02,Mining_Stack_03,Mining_Stack_04]
+Mining_Stack_02 = MiningStack(6, ip="192.168.0.101", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_H, available_worker_ids=[8319532, 8397123, 8307350, 8327018, 8327118, 8317656]), always_on_stacks=True)
+Mining_Stack_04 = MiningStack(1, ip="192.168.0.100", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_H, available_worker_ids=[8436337]), always_on_stacks=True)
 
+Mining_Stack_05 = MiningStack(6, ip="192.168.0.100", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_B, available_worker_ids=None), always_on_stacks=True, always_profit=True)
+
+
+
+
+            
+Mining_Stacks = [Mining_Stack_01, Mining_Stack_02, Mining_Stack_03, Mining_Stack_04, Mining_Stack_05]
+
+for coin in coins:
+    coin.get_profitability()
+    print(coin.name, coin.revenue, coin.profitability, coin.break_even_watt, coin.price, coin.network_hashrate, coin.difficulty)
+
+
+for stack in Mining_Stacks:
+    stack.update_coin()
+    print(stack.name, stack.watt, stack.watt_efficient)
 
 

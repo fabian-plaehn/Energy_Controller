@@ -41,6 +41,7 @@ class AuthProtocol:
 
     def _request_raw(self, path: str, data: bytes, params: dict = None):
         url = f"http://{self.address}/app/{path}"
+        #print(data, params)
         resp = self.session.post(url, data=data, timeout=5, params=params)
         resp.raise_for_status()
         data = resp.content
@@ -92,6 +93,7 @@ class AuthProtocol:
 
     def Initialize(self):
         local_seed = get_random_bytes(16)
+        print(local_seed)
         response = self._request_raw("handshake1", local_seed)
         
         remote_seed, server_hash = response[0:16], response[16:]

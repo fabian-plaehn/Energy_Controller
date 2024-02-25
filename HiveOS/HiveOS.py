@@ -10,8 +10,8 @@ class Hive(object):
         self.farm_id = self.__get_farm_id_by_name(farm_name)
         self.worker_ids = self.__get_worker_ids()
         self.available_worker_ids = available_worker_ids if available_worker_ids is not None else self.worker_ids
-        print(self.worker_ids, self.available_worker_ids)
-        print([fs["name"] for fs in self.get_all_fs()])
+        #print(self.worker_ids, self.available_worker_ids)
+        #print([fs["name"] for fs in self.get_all_fs()])
         # self.worker_id = self.__get_worker_id_by_name(config['WORKER_NAME'])
 
     def api_query(self, method, command, payload=None, params=None):
