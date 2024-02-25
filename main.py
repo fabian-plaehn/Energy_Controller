@@ -20,7 +20,7 @@ def main():
 
         if CEnergyData.pvpower > CEnergyData.csmp:
             usable_power = CEnergyData.pvpower - CEnergyData.csmp
-        elif CEnergyData.batterystatus > 30:  # draw until x percent battery
+        elif CEnergyData.batterystatus > 20:  # draw until x percent battery
             usable_power = CEnergyData.max_battery_power - CEnergyData.batterypower
         else:
             usable_power = CEnergyData.pvpower - CEnergyData.csmp  # negative
@@ -66,7 +66,7 @@ def main():
                 logger(f"turn on efficient sheet for stack: {stack.name}", "info")
                 stack.efficient_sheet = True
 
-            relevant_stacks = [(stack, stack.watt, stack.profit) for stack in Mining_Stacks if (stack.get_status() and not stack.always_on_stacks)]  # has to be on to be turned off
+            relevant_stacks = [(stack, stack.watt_efficient, stack.watt_even) for stack in Mining_Stacks if (stack.get_status() and not stack.always_on_stacks)]  # has to be on to be turned off
             stacks_to_turn_off: List[MiningStack] = [x[0] for x in minimize_with_constraint(relevant_stacks, abs(usable_power))]
             for stack in stacks_to_turn_off:
                 stack.turn_off()
