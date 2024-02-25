@@ -18,12 +18,14 @@ def main():
             logger("No data available", "info")
             continue
 
+
         if CEnergyData.pvpower > CEnergyData.csmp:
             usable_power = CEnergyData.pvpower - CEnergyData.csmp
         elif CEnergyData.batterystatus > 20:  # draw until x percent battery
-            usable_power = CEnergyData.max_battery_power - CEnergyData.batterypower
+            usable_power = 0  # dont add or shutdown rigs
         else:
             usable_power = CEnergyData.pvpower - CEnergyData.csmp  # negative
+
 
         for coin in coins:
             coin.get_profitability()
@@ -34,7 +36,8 @@ def main():
 
         logger("Usable Power: " + str(usable_power), "info")
 
-        if usable_power > 0:  # turn on rigs
+        usable_power = 0
+        if usable_power >= 0:  # turn on rigs
             relevant_stacks = [(stack, stack.watt, stack.profit) for stack in Mining_Stacks if (not stack.get_status() and not stack.always_on_stacks)]  # has to be off to be turned on
             if len(relevant_stacks) == 0:  # maybe even turn on profit over efficiency
                 for stack in Mining_Stacks:
