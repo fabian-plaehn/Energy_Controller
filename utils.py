@@ -9,7 +9,7 @@ _info = True
 _trace = True
 
 
-def log(info, level='debug'):
+def logger(info, level='debug'):
     """
     Log output to the console (if verbose output is enabled)
 
