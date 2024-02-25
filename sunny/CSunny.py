@@ -45,7 +45,7 @@ class EnergyController:
             energy_data = EnergyData(pvpower, feedin, selfcsmp, gridcsmp, csmp, batterypower, batterystatus)
             return energy_data
         except ValueError:
-            print(int(self.driver.find_element(by=By.ID, value='pvpower').text.split(" ")[0].replace(",", ".")))
+            #print(int(self.driver.find_element(by=By.ID, value='pvpower').text.split(" ")[0].replace(",", ".")))
             return None
 
 
