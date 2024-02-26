@@ -7,6 +7,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 from hidden.hidden import sunny_username, sunny_password
+from utils import telegram_bot_sendtext
 
 @dataclass
 class EnergyData:
@@ -22,17 +23,24 @@ class EnergyData:
 
 class EnergyController:
     def __init__(self):
-        self.driver = webdriver.Firefox()
-        self.driver.get("https://www.sunnyportal.com/Templates/Start.aspx?ReturnUrl=%2fFixedPages%2fDashboard.aspx")
+        try:
+            self.driver = webdriver.Firefox()
+            self.driver.get("https://www.sunnyportal.com/Templates/Start.aspx?ReturnUrl=%2fFixedPages%2fDashboard.aspx")
 
-        ## LOGIN ##
-        WebDriverWait(self.driver, 5).until(ec.element_to_be_clickable((By.ID, "onetrust-reject-all-handler"))).click()
-        self.driver.find_element(By.ID, "txtUserName").send_keys(sunny_username)
-        self.driver.find_element(By.ID, "txtPassword").send_keys(sunny_password)
-        time.sleep(1)
-        WebDriverWait(self.driver, 5).until(ec.element_to_be_clickable((By.ID, "ctl00_ContentPlaceHolder1_Logincontrol1_LoginBtn"))).click()
-        WebDriverWait(self.driver, 5).until(ec.element_to_be_clickable((By.XPATH, "/html/body/div[4]/div/div/div[2]/table/tbody/tr[2]/td[1]/a"))).click()  # FARM SPECIFIC
-
+            ## LOGIN ##
+            WebDriverWait(self.driver, 5).until(ec.element_to_be_clickable((By.ID, "onetrust-reject-all-handler"))).click()
+            self.driver.find_element(By.ID, "txtUserName").send_keys(sunny_username)
+            self.driver.find_element(By.ID, "txtPassword").send_keys(sunny_password)
+            time.sleep(1)
+            WebDriverWait(self.driver, 5).until(ec.element_to_be_clickable((By.ID, "ctl00_ContentPlaceHolder1_Logincontrol1_LoginBtn"))).click()
+            WebDriverWait(self.driver, 5).until(ec.element_to_be_clickable((By.XPATH, "/html/body/div[4]/div/div/div[2]/table/tbody/tr[2]/td[1]/a"))).click()  # FARM SPECIFIC
+        except Exception as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            telegram_bot_sendtext("crashed in Energy init")
+            telegram_bot_sendtext(exc_type, fname, exc_tb.tb_lineno)
+            raise Exception
+            
     def get_data(self):
         try:
             pvpower_text = self.driver.find_element(by=By.ID, value='pvpower').text.split(" ")
@@ -59,6 +67,7 @@ class EnergyController:
         
     def reset(self):
         self.driver.close()
+        time.sleep(4)
         self.__init__()
 
 
