@@ -24,7 +24,7 @@ class EnergyController:
     def __init__(self):
         self.driver = webdriver.Firefox()
         self.driver.get("https://www.sunnyportal.com/Templates/Start.aspx?ReturnUrl=%2fFixedPages%2fDashboard.aspx")
-        
+
         ## LOGIN ##
         WebDriverWait(self.driver, 5).until(ec.element_to_be_clickable((By.ID, "onetrust-reject-all-handler"))).click()
         self.driver.find_element(By.ID, "txtUserName").send_keys(sunny_username)

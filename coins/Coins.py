@@ -1,4 +1,6 @@
 import json
+import os
+import sys
 import time
 import urllib.request
 import pandas as pd
@@ -69,8 +71,13 @@ class CoinStatsBase:
                     price += bar["close"]
                 price /= len(response.json()["bars"])'''
                 price = response.json()["bars"][-1]["close"]
+
                 self.price = price * 0.93
-            except:
+
+            except Exception as e:
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                print(exc_type, fname, exc_tb.tb_lineno)
                 pass
 
     def get_profitability(self):
