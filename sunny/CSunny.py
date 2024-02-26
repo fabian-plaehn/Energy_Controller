@@ -35,25 +35,23 @@ class EnergyController:
 
     def get_data(self):
         try:
-            if "k" in self.driver.find_element(by=By.ID, value='pvpower'):
-                pvpower = float(self.driver.find_element(by=By.ID, value='pvpower').text.split(" ")[0].replace(",", ".").replace(" ", "").replace("k", ""))*1000
-            else:
-                pvpower = float(self.driver.find_element(by=By.ID, value='pvpower').text.split(" ")[0].replace(",", ".").replace(" ", ""))
-            feedin =  0  # int(self.driver.find_element(by=By.ID, value='feedin').text.split(" ")[0].replace(",", ".").replace(" ", ""))
-            selfcsmp = 0 # int(self.driver.find_element(by=By.ID, value='selfcsmp').text.split(" ")[0].replace(",", ".").replace(" ", ""))
-            gridcsmp = 0  # int(self.driver.find_element(by=By.ID, value='gridcsmp').text.split(" ")[0].replace(",", ".").replace(" ", ""))
+            pvpower_text = self.driver.find_element(by=By.ID, value='pvpower').text.split(" ")
+            multiplicator = 1000 if "k" in pvpower_text[1] else 1
+            pvpower = float(pvpower_text[0].replace(",", ".").replace(" ", "")) * multiplicator
+            feedin =  0  # float(self.driver.find_element(by=By.ID, value='feedin').text.split(" ")[0].replace(",", ".").replace(" ", ""))
+            selfcsmp = 0 # float(self.driver.find_element(by=By.ID, value='selfcsmp').text.split(" ")[0].replace(",", ".").replace(" ", ""))
+            gridcsmp = 0  # float(self.driver.find_element(by=By.ID, value='gridcsmp').text.split(" ")[0].replace(",", ".").replace(" ", ""))
             
-            if "k" in self.driver.find_element(by=By.ID, value='csmp'):
-                csmp = float(self.driver.find_element(by=By.ID, value='csmp').text.split(" ")[0].replace(",", ".").replace(" ", "").replace("k", ""))*1000
-            else:
-                csmp = float(self.driver.find_element(by=By.ID, value='csmp').text.split(" ")[0].replace(",", ".").replace(" ", ""))
+            csmp_text = self.driver.find_element(by=By.ID, value='csmp').text.split(" ")
+            multiplicator = 1000 if "k" in csmp_text[1] else 1
+            csmp = float(csmp_text[0].replace(",", ".").replace(" ", "")) * multiplicator
 
-            batterypower = int(self.driver.find_element(by=By.ID, value='ctl00_ContentPlaceHolder1_SelfConsumption_Status1_BatteryPower').text.split(" ")[0])
-            batterystatus = int(self.driver.find_element(by=By.ID, value='ctl00_ContentPlaceHolder1_SelfConsumption_Status1_BatteryChargeStatus').text.split(" ")[0])
+            batterypower = float(self.driver.find_element(by=By.ID, value='ctl00_ContentPlaceHolder1_SelfConsumption_Status1_BatteryPower').text.split(" ")[0])
+            batterystatus = float(self.driver.find_element(by=By.ID, value='ctl00_ContentPlaceHolder1_SelfConsumption_Status1_BatteryChargeStatus').text.split(" ")[0])
 
             energy_data = EnergyData(pvpower, feedin, selfcsmp, gridcsmp, csmp, batterypower, batterystatus)
             return energy_data
-        except ValueError as e:
+        except (ValueError, IndexError) as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             print(exc_type, fname, exc_tb.tb_lineno)
