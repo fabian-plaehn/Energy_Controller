@@ -7,12 +7,13 @@ from typing import List, Tuple
 from itertools import permutations
 import numpy as np
 import requests
+from hidden.hidden import bot_token, bot_chatID
 _debug = False
 _info = True
 _trace = False
 
 
-def telegram_bot_sendtext(bot_message : str, bot_token , bot_chatID):
+def telegram_bot_sendtext(bot_message : str):
     bot_message = bot_message.replace("_", "")
     send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID + '&parse_mode=Markdown&text=' + bot_message
     response = requests.get(send_text)

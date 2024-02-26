@@ -3,21 +3,20 @@ import os
 import sys
 import time
 from typing import List
-from hidden.hidden import bot_chatID, bot_token
 from utils import logger, maximize_with_constraint, minimize_with_constraint, telegram_bot_sendtext
 
 from numpy import mean
 from sunny.CSunny import EnergyController
 
-telegram_bot_sendtext(f"import mining stacks", bot_token, bot_chatID)
+telegram_bot_sendtext(f"import mining stacks")
 from tapo.CTapo import Mining_Stacks, MiningStack
 
 from coins.Coins import coins
 
-telegram_bot_sendtext(f"imports done", bot_token, bot_chatID)
+telegram_bot_sendtext(f"imports done")
 def main():
     # init classes
-    telegram_bot_sendtext(f"init Energy class", bot_token, bot_chatID)
+    telegram_bot_sendtext(f"init Energy class")
     CEnergyController = EnergyController()
     
     check_every = 120
@@ -47,7 +46,7 @@ def main():
             last_check = time.time()
             logger(f"{CEnergyData}", "info")
             logger(f"mean_pv_power: {pvpower}, mean_csmp: {csmp}", "info")
-            telegram_bot_sendtext(f"mean_pv_power: {pvpower}, mean_csmp: {csmp}, battery_status: {CEnergyData.batterystatus}, battery_power: {CEnergyData.batterypower}", bot_token, bot_chatID)
+            telegram_bot_sendtext(f"mean_pv_power: {pvpower}, mean_csmp: {csmp}, battery_status: {CEnergyData.batterystatus}, battery_power: {CEnergyData.batterypower}")
 
             if pvpower > csmp:
                 usable_power = pvpower - csmp
@@ -128,8 +127,8 @@ def main():
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print(exc_type, fname, exc_tb.tb_lineno)
-        telegram_bot_sendtext("crashed", bot_token, bot_chatID)
-        telegram_bot_sendtext(f"{exc_type, fname, exc_tb.tb_lineno}", bot_token, bot_chatID)  
+        telegram_bot_sendtext("crashed")
+        telegram_bot_sendtext(f"{exc_type, fname, exc_tb.tb_lineno}")  
 
 
 if __name__ == "__main__":
