@@ -24,12 +24,20 @@ def main():
     q_pvpower = deque(maxlen=20)
     q_csmp = deque(maxlen=20)
     
+    no_data_counter = 0
+    no_data_max_count = 20
     try:
         while True:
             CEnergyData = CEnergyController.get_data()
             if CEnergyData is None:
                 logger("No data available", "info")
+                telegram_bot_sendtext("No data available")
+                no_data_counter += 1
                 time.sleep(2)
+                
+                if no_data_counter >= no_data_max_count:
+                    CEnergyController.reset()
+                    no_data_counter = 0
                 continue
 
             q_pvpower.append(CEnergyData.pvpower)
