@@ -36,12 +36,12 @@ class EnergyController:
     def get_data(self):
         try:
             pvpower = int(self.driver.find_element(by=By.ID, value='pvpower').text.split(" ")[0].replace(",", ".").replace(" ", ""))
-            feedin = int(self.driver.find_element(by=By.ID, value='feedin').text.split(" ")[0].replace(",", ".").replace(" ", ""))
-            selfcsmp = int(self.driver.find_element(by=By.ID, value='selfcsmp').text.split(" ")[0].replace(",", ".").replace(" ", ""))
-            gridcsmp = int(self.driver.find_element(by=By.ID, value='gridcsmp').text.split(" ")[0].replace(",", ".").replace(" ", ""))
+            feedin =  0  # int(self.driver.find_element(by=By.ID, value='feedin').text.split(" ")[0].replace(",", ".").replace(" ", ""))
+            selfcsmp = 0 # int(self.driver.find_element(by=By.ID, value='selfcsmp').text.split(" ")[0].replace(",", ".").replace(" ", ""))
+            gridcsmp = 0  # int(self.driver.find_element(by=By.ID, value='gridcsmp').text.split(" ")[0].replace(",", ".").replace(" ", ""))
             csmp = int(self.driver.find_element(by=By.ID, value='csmp').text.split(" ")[0].replace(",", ".").replace(" ", ""))
 
-            batterypower = int(self.driver.find_element(by=By.ID, value='ctl00_ContentPlaceHolder1_SelfConsumption_Status1_BatteryPower').text.split(" ")[0])
+            batterypower = 0  # int(self.driver.find_element(by=By.ID, value='ctl00_ContentPlaceHolder1_SelfConsumption_Status1_BatteryPower').text.split(" ")[0])
             batterystatus = int(self.driver.find_element(by=By.ID, value='ctl00_ContentPlaceHolder1_SelfConsumption_Status1_BatteryChargeStatus').text.split(" ")[0])
 
             energy_data = EnergyData(pvpower, feedin, selfcsmp, gridcsmp, csmp, batterypower, batterystatus)

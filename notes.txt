@@ -1,0 +1,4 @@
+C:\ThanosDodd\Python3.6\pythonw.exe C:\\Python\Scripts\moveDLs.py
+
+tasklist
+taskkill /pid processId /f

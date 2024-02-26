@@ -177,8 +177,8 @@ class XDAG_Stats(CoinStatsBase):
         self.price = None
         self.block_reward = 64
         self.block_time = 64
-        self.hashrate = 11500
-        self.watt = 0.115
+        self.hashrate = 12000
+        self.watt = 0.120
         self.name = "XDAG"
         self.cg_id = "dagger"
         self.market = "coingecko"
