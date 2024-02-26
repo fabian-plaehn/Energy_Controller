@@ -24,12 +24,20 @@ def main():
     q_pvpower = deque(maxlen=20)
     q_csmp = deque(maxlen=20)
     
+    no_data_counter = 0
+    no_data_max_count = 20
     try:
         while True:
             CEnergyData = CEnergyController.get_data()
             if CEnergyData is None:
                 logger("No data available", "info")
+                telegram_bot_sendtext("No data available")
+                no_data_counter += 1
                 time.sleep(2)
+                
+                if no_data_counter >= no_data_max_count:
+                    CEnergyController.reset()
+                    no_data_counter = 0
                 continue
 
             q_pvpower.append(CEnergyData.pvpower)
@@ -90,8 +98,9 @@ def main():
                 if usable_power <= 0:
                     continue
                 stacks_to_turn_on: List[MiningStack] = [x[0] for x in maximize_with_constraint(relevant_stacks, abs(usable_power))]
-                telegram_bot_sendtext(f"Turn on: {stacks_to_turn_on}")
+
                 for stack in stacks_to_turn_on:
+                    telegram_bot_sendtext(f"Turn on: {stack.name}")
                     stack.turn_on()
             else:  # turn off rigs
                 # switch from profit to efficiency
@@ -116,8 +125,9 @@ def main():
                 if len(stacks_to_turn_off) == 0:  # minimize return list of rigs with consumption higher than defizit
                     # if its not possible bcs the defizit is too high list is empty -> then turn off everything
                     stacks_to_turn_off = [stack for stack in Mining_Stacks if (stack.get_status() and not stack.always_on_stacks)]  # has to be on to be turned off
-                telegram_bot_sendtext(f"Turn off: {stacks_to_turn_on}")
+
                 for stack in stacks_to_turn_off:
+                    telegram_bot_sendtext(f"Turn off: {stack.name}")
                     stack.turn_off()
                 
             for stack in Mining_Stacks:
