@@ -5,11 +5,11 @@ import time
 from typing import List
 
 from numpy import mean
-
 from sunny.CSunny import EnergyController
 from tapo.CTapo import Mining_Stacks, MiningStack
 from utils import logger, maximize_with_constraint, minimize_with_constraint, telegram_bot_sendtext
 from coins.Coins import coins
+from hidden.hidden import bot_chatID, bot_token
 
 def main():
     # init classes
@@ -17,8 +17,8 @@ def main():
     
     check_every = 120
     last_check = time.time()-120
-    q_pvpower = deque(maxlen=120)
-    q_csmp = deque(maxlen=120)
+    q_pvpower = deque(maxlen=20)
+    q_csmp = deque(maxlen=20)
     
     try:
         while True:
@@ -42,12 +42,14 @@ def main():
             last_check = time.time()
             logger(f"{CEnergyData}", "info")
             logger(f"mean_pv_power: {pvpower}, mean_csmp: {csmp}", "info")
-            telegram_bot_sendtext(f"mean_pv_power: {pvpower}, mean_csmp: {csmp}")
+            telegram_bot_sendtext(f"mean_pv_power: {pvpower}, mean_csmp: {csmp}", bot_token, bot_chatID)
 
             if pvpower > csmp:
                 usable_power = pvpower - csmp
             elif CEnergyData.batterystatus > 20:  # draw until x percent battery
                 usable_power = 0  # dont add or shutdown rigs
+                if CEnergyData.batterypower > 3500:  # dont exceed battery power limit else you will pull from grid
+                    usable_power = 3500 - CEnergyController  # go down by difference
             else:
                 usable_power = pvpower - csmp  # negative
 
@@ -62,7 +64,7 @@ def main():
             logger("Usable Power: " + str(usable_power), "info")
 
             if usable_power >= 0:  # turn on rigs
-                relevant_stacks = [(stack, stack.watt, stack.profit) for stack in Mining_Stacks if (not stack.get_status() and not stack.always_on_stacks)]  # has to be off to be turned on
+                relevant_stacks = [(stack, stack.watt_efficient, stack.even_watt_rate) for stack in Mining_Stacks if (not stack.get_status() and not stack.always_on_stacks)]  # has to be off to be turned on
                 if len(relevant_stacks) == 0:  # maybe even turn on profit over efficiency
                     for stack in Mining_Stacks:
                         if not stack.efficient_sheet:
@@ -82,7 +84,7 @@ def main():
                     stack.turn_on()
             else:  # turn off rigs
                 # switch from profit to efficiency
-                relevant_stacks = [(stack, stack.watt_efficient, stack.watt_even) for stack in Mining_Stacks if (stack.get_status() and not stack.always_on_stacks)]  # has to be on to be turned off
+                relevant_stacks = [(stack, stack.watt_efficient, stack.even_watt_rate) for stack in Mining_Stacks if (stack.get_status() and not stack.always_on_stacks)]  # has to be on to be turned off
 
                 for stack, _, _ in relevant_stacks:
                     if stack.efficient_sheet:
@@ -90,7 +92,7 @@ def main():
 
                     if usable_power >= 0:
                         continue
-                    #  enough power and profit sheet not activated yet
+                    #  defizit power and efficient sheet not activated yet
                     usable_power += stack.efficient_watt_difference
                     logger(f"turn on efficient sheet for stack: {stack.name}", "info")
                     stack.efficient_sheet = True
@@ -106,15 +108,15 @@ def main():
                 for stack in stacks_to_turn_off:
                     stack.turn_off()
                 
-
             for stack in Mining_Stacks:
                 stack.set_sheet()
+                
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print(exc_type, fname, exc_tb.tb_lineno)
-        telegram_bot_sendtext("crashed")
-        telegram_bot_sendtext(f"{exc_type, fname, exc_tb.tb_lineno}")  
+        telegram_bot_sendtext("crashed", bot_token, bot_chatID)
+        telegram_bot_sendtext(f"{exc_type, fname, exc_tb.tb_lineno}", bot_token, bot_chatID)  
 
 
 if __name__ == "__main__":

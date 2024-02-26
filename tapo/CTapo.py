@@ -166,7 +166,7 @@ class MiningStack:
         self.time_turn_off = time.time()
         self.watt = 0
         self.profit = 0
-        self.watt_even = 0
+        self.even_watt_rate = 0
         self.watt_efficient = 0
         self.efficient_watt_difference = 0
         self.efficient_sheet = efficient_sheet
@@ -198,7 +198,7 @@ class MiningStack:
         coins.sort(key=lambda x: x.break_even_watt, reverse=True)
         self.efficient_coin = coins[0].name
         self.watt_efficient = coins[0].watt * self.number_pcs * 1000
-        self.watt_even = coins[0].break_even_watt * self.number_pcs
+        self.even_watt_rate = coins[0].break_even_watt * self.number_pcs
 
         self.efficient_watt_difference = self.watt - self.watt_efficient
 
@@ -210,16 +210,13 @@ class MiningStack:
             return
 
         if (self.efficient_sheet or self.always_efficient) and not self.always_profit:
-            logger(f"Set efficient Sheet {self.efficient_coin}", "info")
             fs = [fs for fs in self.all_fs if fs["name"] == self.efficient_coin][0]
         else:
-            logger(f"Set profit Sheet {self.profit_coin}", "info")
             fs = [fs for fs in self.all_fs if fs["name"] == self.profit_coin][0]
 
-        if fs["id"] != self.last_fs:
-            logger("Set new flightsheet", "info")
-            self.CHive.set_fs_all(fs["id"])
-            self.last_fs = fs["id"]
+        logger(f"Set flightsheet {fs['name']}", "info")
+        self.CHive.set_fs_all(fs["id"])
+        self.last_fs = fs["id"]
 
 
 Mining_Stack_01 = MiningStack(6, ip="192.168.0.100", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_H, available_worker_ids=[8395042, 8394783, 8436278, 8361530, 8397124, 8395108]))

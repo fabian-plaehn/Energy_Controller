@@ -1,20 +1,22 @@
 import datetime
+import itertools
 import math
+import string
 from time import ctime, time, sleep
 from typing import List, Tuple
 from itertools import permutations
 import numpy as np
 import requests
-from hidden.hidden import bot_chatID, bot_token
 _debug = False
 _info = True
 _trace = False
 
 
-def telegram_bot_sendtext(bot_message):
-   send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID + '&parse_mode=Markdown&text=' + bot_message
-   response = requests.get(send_text)
-   return response.json()
+def telegram_bot_sendtext(bot_message : str, bot_token , bot_chatID):
+    bot_message = bot_message.replace("_", "")
+    send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID + '&parse_mode=Markdown&text=' + bot_message
+    response = requests.get(send_text)
+    return response.json()
 
 
 def logger(info, level='debug'):
@@ -43,6 +45,7 @@ def maximize_with_constraint(tlist: List[Tuple[object, float, float]], constrain
             if constraint_first_number >= sum([x[1] for x in j]):  # if rigs need less than contraint -> viable
                 if sum(x[2] for x in j) > max_sum:
                     max_elements = j
+                    max_sum = sum(x[2] for x in j)
 
     return list(max_elements)
 
@@ -55,9 +58,21 @@ def minimize_with_constraint(tlist: List[Tuple[object, float, float]], constrain
             if constraint_first_number <= sum([x[1] for x in j]): # if rigs needs more than contraint -> viable
                 if sum(x[2] for x in j) < min_sum:
                     min_elements = j
+                    min_sum = sum(x[2] for x in j)
 
     return list(min_elements)
-
+        
+def king_of_max(object_list):
+    for i in range(len(object_list)):
+        print(list(itertools.combinations(object_list, i+1)))
+        for elements in list(itertools.combinations(object_list, i+1)):
+            print(list(itertools.product(*elements))) 
+    
+    pass
 
 if __name__ == '__main__':
-    print(maximize_with_constraint([(np.random.randint(low=0, high=10), np.random.randint(low=0, high=10)) for i in range(5)], 10))
+    object_list = [[[i, np.random.randint(low=0, high=10), np.random.randint(low=0, high=10)] for j in range(2)] for i in range(4)]
+    king_of_max(object_list)
+    '''object_list = [(1, np.random.randint(low=0, high=10), np.random.randint(low=0, high=10)) for i in range(5)]
+    print(object_list)
+    print(minimize_with_constraint(object_list, 10))'''

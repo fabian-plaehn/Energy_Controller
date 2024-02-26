@@ -17,7 +17,7 @@ class CoinStatsBase:
     def __init__(self):
         self.difficulty = None
         self.network_hashrate = None
-        self.price = None
+        self.price = 0
         self.last_price_update = time.time()
         self.price_update = 2 * 60 * 60
         self.block_reward = 12.5
@@ -61,14 +61,17 @@ class CoinStatsBase:
                 print("invalid header")
                 return
         if self.market == "xeggex":
-            response = request("GET", f'https://api.xeggex.com/api/v2/market/candles?symbol={self.xeggex_ticker}%2FUSDT&from={time.time() - 60 * 60 * 24}&to={time.time()}&resolution=60&countBack=24&firstDataRequest=1')
-            price = 0
+            try:
+                response = request("GET", f'https://api.xeggex.com/api/v2/market/candles?symbol={self.xeggex_ticker}%2FUSDT&from={time.time() - 60 * 60 * 24}&to={time.time()}&resolution=60&countBack=24&firstDataRequest=1')
+                price = 0
 
-            '''for bar in response.json()["bars"]:
-                price += bar["close"]
-            price /= len(response.json()["bars"])'''
-            price = response.json()["bars"][-1]["close"]
-            self.price = price * 0.93
+                '''for bar in response.json()["bars"]:
+                    price += bar["close"]
+                price /= len(response.json()["bars"])'''
+                price = response.json()["bars"][-1]["close"]
+                self.price = price * 0.93
+            except:
+                pass
 
     def get_profitability(self):
         self.get_difficulty()
@@ -184,9 +187,14 @@ class XDAG_Stats(CoinStatsBase):
         self.market = "coingecko"
 
     def get_difficulty(self):
-        with urllib.request.urlopen("https://explorer.xdag.io/api/status") as url:
-            data = json.load(url)
-            self.network_hashrate = data["stats"]['hashrate'][1]
+        try:
+            with urllib.request.urlopen("https://explorer.xdag.io/api/status") as url:
+                data = json.load(url)
+                self.network_hashrate = data["stats"]['hashrate'][1]
+        except:
+            print("fucking site down xdag")
+            if self.network_hashrate is None:
+                self.network_hashrate = 2_000_000_000
         self.difficulty = self.network_hashrate * self.block_time
 
 
@@ -219,8 +227,9 @@ class ZEPH_Stats(CoinStatsBase):
                 letter = text[start + i - 1].lower()
                 self.network_hashrate *= letter_factor[letter]
         except:
-            print("fucking site down")
-            self.network_hashrate = 1_800_000_000
+            print("fucking site down zeph")
+            if self.network_hashrate is None:
+                self.network_hashrate = 2_500_000_000
             self.difficulty = self.network_hashrate * self.block_time
 
 
@@ -241,8 +250,13 @@ class RTC_Stats(CoinStatsBase):
         self.xeggex_ticker = "RTC"
 
     def get_difficulty(self):
-        with urllib.request.urlopen("https://explorer.reaction.network/api/getnetworkhashps") as url:
-            self.network_hashrate = json.load(url)
+        try:
+            with urllib.request.urlopen("https://explorer.reaction.network/api/getnetworkhashps") as url:
+                self.network_hashrate = json.load(url)
+        except:
+            print("fucking site down rtc")
+            if self.network_hashrate is None:
+                self.network_hashrate = 9999999999999
         self.difficulty = self.network_hashrate * self.block_time
 
 #192.168.178.147
