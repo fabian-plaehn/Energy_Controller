@@ -17,7 +17,7 @@ class EnergyData:
     csmp: int
     batterypower: int
     batterystatus: int
-    max_battery_power: int = 4000
+    max_battery_power: int = 3900
 
 
 class EnergyController:
