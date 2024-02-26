@@ -35,11 +35,18 @@ class EnergyController:
 
     def get_data(self):
         try:
-            pvpower = int(self.driver.find_element(by=By.ID, value='pvpower').text.split(" ")[0].replace(",", ".").replace(" ", ""))
+            if "k" in self.driver.find_element(by=By.ID, value='pvpower'):
+                pvpower = float(self.driver.find_element(by=By.ID, value='pvpower').text.split(" ")[0].replace(",", ".").replace(" ", "").replace("k", ""))*1000
+            else:
+                pvpower = float(self.driver.find_element(by=By.ID, value='pvpower').text.split(" ")[0].replace(",", ".").replace(" ", ""))
             feedin =  0  # int(self.driver.find_element(by=By.ID, value='feedin').text.split(" ")[0].replace(",", ".").replace(" ", ""))
             selfcsmp = 0 # int(self.driver.find_element(by=By.ID, value='selfcsmp').text.split(" ")[0].replace(",", ".").replace(" ", ""))
             gridcsmp = 0  # int(self.driver.find_element(by=By.ID, value='gridcsmp').text.split(" ")[0].replace(",", ".").replace(" ", ""))
-            csmp = int(self.driver.find_element(by=By.ID, value='csmp').text.split(" ")[0].replace(",", ".").replace(" ", ""))
+            
+            if "k" in self.driver.find_element(by=By.ID, value='csmp'):
+                csmp = float(self.driver.find_element(by=By.ID, value='csmp').text.split(" ")[0].replace(",", ".").replace(" ", "").replace("k", ""))*1000
+            else:
+                csmp = float(self.driver.find_element(by=By.ID, value='csmp').text.split(" ")[0].replace(",", ".").replace(" ", ""))
 
             batterypower = int(self.driver.find_element(by=By.ID, value='ctl00_ContentPlaceHolder1_SelfConsumption_Status1_BatteryPower').text.split(" ")[0])
             batterystatus = int(self.driver.find_element(by=By.ID, value='ctl00_ContentPlaceHolder1_SelfConsumption_Status1_BatteryChargeStatus').text.split(" ")[0])

@@ -50,6 +50,9 @@ def main():
                 usable_power = 0  # dont add or shutdown rigs
                 if CEnergyData.batterypower > 3500:  # dont exceed battery power limit else you will pull from grid
                     usable_power = 3500 - CEnergyController  # go down by difference
+                elif CEnergyData.batterystatus > 60:  # greater than 60 not exceeding the powerlimit boot up some rigs
+                    usable_power = CEnergyData.batterypower - 3000
+                    
             else:
                 usable_power = pvpower - csmp  # negative
 
