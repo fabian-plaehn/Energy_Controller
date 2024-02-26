@@ -3,16 +3,21 @@ import os
 import sys
 import time
 from typing import List
+from hidden.hidden import bot_chatID, bot_token
+from utils import logger, maximize_with_constraint, minimize_with_constraint, telegram_bot_sendtext
 
 from numpy import mean
 from sunny.CSunny import EnergyController
-from tapo.CTapo import Mining_Stacks, MiningStack
-from utils import logger, maximize_with_constraint, minimize_with_constraint, telegram_bot_sendtext
-from coins.Coins import coins
-from hidden.hidden import bot_chatID, bot_token
 
+telegram_bot_sendtext(f"import mining stacks", bot_token, bot_chatID)
+from tapo.CTapo import Mining_Stacks, MiningStack
+
+from coins.Coins import coins
+
+telegram_bot_sendtext(f"imports done", bot_token, bot_chatID)
 def main():
     # init classes
+    telegram_bot_sendtext(f"init Energy class", bot_token, bot_chatID)
     CEnergyController = EnergyController()
     
     check_every = 120
@@ -42,7 +47,7 @@ def main():
             last_check = time.time()
             logger(f"{CEnergyData}", "info")
             logger(f"mean_pv_power: {pvpower}, mean_csmp: {csmp}", "info")
-            telegram_bot_sendtext(f"mean_pv_power: {pvpower}, mean_csmp: {csmp}", bot_token, bot_chatID)
+            telegram_bot_sendtext(f"mean_pv_power: {pvpower}, mean_csmp: {csmp}, battery_status: {CEnergyData.batterystatus}, battery_power: {CEnergyData.batterypower}", bot_token, bot_chatID)
 
             if pvpower > csmp:
                 usable_power = pvpower - csmp
@@ -80,9 +85,13 @@ def main():
                         #  enough power and profit sheet not activated yet
 
                         logger(f"turn on profit sheet for stack: {stack.name}", "info")
+                        telegram_bot_sendtext(f"turn on profit sheet for stack: {stack.name}")
                         stack.efficient_sheet = False
 
+                if usable_power <= 0:
+                    continue
                 stacks_to_turn_on: List[MiningStack] = [x[0] for x in maximize_with_constraint(relevant_stacks, abs(usable_power))]
+                telegram_bot_sendtext(f"Turn on: {stacks_to_turn_on}")
                 for stack in stacks_to_turn_on:
                     stack.turn_on()
             else:  # turn off rigs
@@ -98,6 +107,7 @@ def main():
                     #  defizit power and efficient sheet not activated yet
                     usable_power += stack.efficient_watt_difference
                     logger(f"turn on efficient sheet for stack: {stack.name}", "info")
+                    telegram_bot_sendtext(f"turn on efficient sheet for stack: {stack.name}")
                     stack.efficient_sheet = True
 
                 if usable_power >= 0:
@@ -107,7 +117,7 @@ def main():
                 if len(stacks_to_turn_off) == 0:  # minimize return list of rigs with consumption higher than defizit
                     # if its not possible bcs the defizit is too high list is empty -> then turn off everything
                     stacks_to_turn_off = [stack for stack in Mining_Stacks if (stack.get_status() and not stack.always_on_stacks)]  # has to be on to be turned off
-                    
+                telegram_bot_sendtext(f"Turn off: {stacks_to_turn_on}")
                 for stack in stacks_to_turn_off:
                     stack.turn_off()
                 

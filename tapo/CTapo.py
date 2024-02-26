@@ -217,6 +217,12 @@ class MiningStack:
         logger(f"Set flightsheet {fs['name']}", "info")
         self.CHive.set_fs_all(fs["id"])
         self.last_fs = fs["id"]
+        
+    def __repr__(self) -> str:
+        return f"[{self.p100.getDeviceName()}, {self.number_pcs}, {self.get_status()}]"
+        
+    #def __str__(self) -> str:
+    #    return f"[{self.name}, {self.number_pcs}, {self.get_status()}]"
 
 # Dose 1 2
 Mining_Stack_01 = MiningStack(6, ip="192.168.0.100", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_H, available_worker_ids=[8395042, 8394783, 8436278, 8361530, 8397124, 8395108]))
