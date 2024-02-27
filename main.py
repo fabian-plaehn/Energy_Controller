@@ -72,6 +72,7 @@ def main():
             for coin in coins:
                 coin.get_profitability()
                 print(coin.name, coin.revenue, coin.profitability, coin.break_even_watt, coin.price, coin.network_hashrate, coin.difficulty)
+                telegram_bot_sendtext(f"{coin.name, coin.profitability, coin.break_even_watt}")
 
             for stack in Mining_Stacks:
                 stack.update_coin()

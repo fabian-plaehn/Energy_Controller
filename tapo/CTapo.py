@@ -208,15 +208,15 @@ class MiningStack:
 
     def set_sheet(self):
         try:
-            if not self.p100.get_status():
-                return
-
             if (self.efficient_sheet or self.always_efficient) and not self.always_profit:
                 fs = [fs for fs in self.all_fs if fs["name"] == self.efficient_coin][0]
+                telegram_bot_sendtext(f"Set efficient flightsheet {fs['name']}")
             else:
                 fs = [fs for fs in self.all_fs if fs["name"] == self.profit_coin][0]
+                telegram_bot_sendtext(f"Set profit flightsheet {fs['name']}")
 
             logger(f"Set flightsheet {fs['name']}", "info")
+            
             self.CHive.set_fs_all(fs["id"])
 
         except KeyError as e:
