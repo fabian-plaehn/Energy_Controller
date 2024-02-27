@@ -234,18 +234,18 @@ class MiningStack:
     #    return f"[{self.name}, {self.number_pcs}, {self.get_status()}]"
 
 # Dose 1 2
-Mining_Stack_01 = MiningStack(6, ip="192.168.0.100", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_H, available_worker_ids=[8395042, 8394783, 8436278, 8361530, 8397124, 8395108]))
+Mining_Stack_01 = MiningStack(6, ip="192.168.0.100", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_B, available_worker_ids=[8395042, 8394783, 8436278, 8361530, 8397124, 8395108]))
 
 # Dose 1 1
-Mining_Stack_03 = MiningStack(6, ip="192.168.0.102", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_H, available_worker_ids=[8327057, 8395188, 8616656, 8395138, 8395190, 8436296]))
+Mining_Stack_03 = MiningStack(6, ip="192.168.0.102", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_B, available_worker_ids=[8327057, 8395188, 8616656, 8395138, 8395190, 8436296]))
 
 # Dose 2 1
-Mining_Stack_02 = MiningStack(4, ip="192.168.0.101", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_H, available_worker_ids=[8436337, 8319532, 8397123, 8307350]))
+Mining_Stack_02 = MiningStack(4, ip="192.168.0.101", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_B, available_worker_ids=[8436337, 8319532, 8397123, 8307350]))
 
 # Dose 2 2
-Mining_Stack_04 = MiningStack(3, ip="192.168.0.124", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_H, available_worker_ids=[8327018, 8327118, 8317656]))
+Mining_Stack_04 = MiningStack(3, ip="192.168.0.124", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_B, available_worker_ids=[8327018, 8327118, 8317656]))
 
-Mining_Stack_05 = MiningStack(6, ip="192.168.0.100", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_B, available_worker_ids=None), always_on_stacks=True, always_profit=True)
+Mining_Stack_05 = MiningStack(6, ip="192.168.0.100", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_H, available_worker_ids=None), always_on_stacks=True, always_profit=True)
 
 
 
