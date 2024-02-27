@@ -209,10 +209,10 @@ class MiningStack:
     def set_sheet(self):
         try:
             if (self.efficient_sheet or self.always_efficient) and not self.always_profit:
-                fs = [fs for fs in self.all_fs if fs["name"] == self.efficient_coin][0]
+                fs = [fs_ for fs_ in self.all_fs if fs_["name"] == self.efficient_coin][0]
                 telegram_bot_sendtext(f"Set efficient flightsheet {fs['name']}")
             else:
-                fs = [fs for fs in self.all_fs if fs["name"] == self.profit_coin][0]
+                fs = [fs_ for fs_ in self.all_fs if fs_["name"] == self.profit_coin][0]
                 telegram_bot_sendtext(f"Set profit flightsheet {fs['name']}")
 
             logger(f"Set flightsheet {fs['name']}", "info")
@@ -224,7 +224,6 @@ class MiningStack:
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             telegram_bot_sendtext("crashed in CTapo set_sheet")
             telegram_bot_sendtext(f"{exc_type, fname, exc_tb.tb_lineno}")
-            raise Exception
             
         
     def __repr__(self) -> str:
