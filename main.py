@@ -92,9 +92,9 @@ def main():
                         usable_power -= stack.efficient_watt_difference
                         #  enough power and profit sheet not activated yet
 
-                        logger(f"turn on profit sheet for stack: {stack.name}, sheet difference: {stack.efficient_watt_difference}", "info")
-                        logger("Usable Power now: " + str(usable_power), "info")
-                        telegram_bot_sendtext(f"turn on profit sheet for stack: {stack.name}")
+                        telegram_bot_sendtext(f"turn on profit sheet for stack: {stack.name}, sheet difference: {stack.efficient_watt_difference}")
+                        telegram_bot_sendtext("Usable Power now: " + str(usable_power))
+                        logger(f"turn on profit sheet for stack: {stack.name}", "info")
                         stack.efficient_sheet = False
 
                 if usable_power <= 0:
@@ -117,8 +117,8 @@ def main():
                     #  defizit power and efficient sheet not activated yet
                     usable_power += stack.efficient_watt_difference
                     logger(f"turn on efficient sheet for stack: {stack.name}", "info")
-                    logger(f"turn on efficient sheet for stack: {stack.name}, sheet difference: {stack.efficient_watt_difference}", "info")
-                    logger("Usable Power now: " + str(usable_power), "info")
+                    telegram_bot_sendtext(f"turn on efficient sheet for stack: {stack.name}, sheet difference: {stack.efficient_watt_difference}")
+                    telegram_bot_sendtext("Usable Power now: " + str(usable_power))
                     stack.efficient_sheet = True
 
                 if usable_power >= 0:
