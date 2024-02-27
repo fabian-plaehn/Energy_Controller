@@ -1,10 +1,11 @@
+import os
+import sys
 import time
 #from PyP100 import PyP100
 from hidden.hidden import tapo_email, tapo_password, tapo_ip_1, HIVE_API_KEY, FARM_NAME_B, FARM_NAME_H
 from coins.Coins import coins
 from HiveOS.HiveOS import Hive
-from utils import logger
-
+from utils import logger, telegram_bot_sendtext
 
 class Always_On_P100:
     def turn_on(self):
@@ -206,17 +207,25 @@ class MiningStack:
         return self.p100.get_status()
 
     def set_sheet(self):
-        if not self.p100.get_status():
-            return
+        try:
+            if not self.p100.get_status():
+                return
 
-        if (self.efficient_sheet or self.always_efficient) and not self.always_profit:
-            fs = [fs for fs in self.all_fs if fs["name"] == self.efficient_coin][0]
-        else:
-            fs = [fs for fs in self.all_fs if fs["name"] == self.profit_coin][0]
+            if (self.efficient_sheet or self.always_efficient) and not self.always_profit:
+                fs = [fs for fs in self.all_fs if fs["name"] == self.efficient_coin][0]
+            else:
+                fs = [fs for fs in self.all_fs if fs["name"] == self.profit_coin][0]
 
-        logger(f"Set flightsheet {fs['name']}", "info")
-        self.CHive.set_fs_all(fs["id"])
-        self.last_fs = fs["id"]
+            logger(f"Set flightsheet {fs['name']}", "info")
+            self.CHive.set_fs_all(fs["id"])
+
+        except KeyError as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            telegram_bot_sendtext("crashed in CTapo set_sheet")
+            telegram_bot_sendtext(f"{exc_type, fname, exc_tb.tb_lineno}")
+            raise Exception
+            
         
     def __repr__(self) -> str:
         return f"[{self.p100.getDeviceName()}, {self.number_pcs}, {self.get_status()}]"
