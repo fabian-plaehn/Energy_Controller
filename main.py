@@ -39,7 +39,7 @@ def main():
                     CEnergyController.reset()
                     no_data_counter = 0
                 continue
-
+            no_data_counter = 0
             q_pvpower.append(CEnergyData.pvpower)
             q_csmp.append(CEnergyData.csmp)
             
