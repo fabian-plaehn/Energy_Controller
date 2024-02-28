@@ -37,9 +37,11 @@ class EnergyController:
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            telegram_bot_sendtext("crashed in Energy init")
+            
             telegram_bot_sendtext(f"{exc_type, fname, exc_tb.tb_lineno}")
-            raise Exception
+            telegram_bot_sendtext("crashed in Energy init retrying ... ")
+            time.sleep(5)
+            self.__init__()
             
     def get_data(self):
         try:
