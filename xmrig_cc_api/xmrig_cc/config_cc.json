@@ -1,0 +1,28 @@
+{
+    "background": false,                        
+    "colors": true,                            
+    "log-file": null,                           
+    "syslog": false,                          
+    "bind-ip": "100.96.102.113",                      
+    "port": 3344,                              
+    "user": "admin",                          
+    "pass": "pass",                           
+    "access-token": "mySecret",                
+    "use-tls" : false,                          
+    "cert-file" : "server.pem",                
+    "key-file" : "server.key",                  
+    "client-config-folder" : null,             
+    "client-update-folder" : null,            
+    "client-log-lines-history" : 1000,         
+    "custom-dashboard" : "index.html",         
+
+    "pushover-user-key" : "",                 
+    "pushover-api-token" : "",             
+ 
+    "telegram-bot-token" : "",                
+    "telegram-chat-id" : "",                   
+    "discord-webhook-url" : "",             
+    "push-miner-offline-info" : true,         
+    "push-miner-zero-hash-info" : true,       
+    "push-periodic-mining-status" : true      
+}
