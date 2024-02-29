@@ -37,37 +37,41 @@ class EnergyController:
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            telegram_bot_sendtext("crashed in Energy init")
-            telegram_bot_sendtext(exc_type, fname, exc_tb.tb_lineno)
-            raise Exception
+            
+            telegram_bot_sendtext(f"{exc_type, fname, exc_tb.tb_lineno}")
+            telegram_bot_sendtext("crashed in Energy init retrying ... ")
+            time.sleep(5)
+            self.__init__()
             
     def get_data(self):
         try:
+      
             pvpower_text = self.driver.find_element(by=By.ID, value='pvpower').text.split(" ")
             multiplicator = 1000 if "k" in pvpower_text[1] else 1
+       
             pvpower = float(pvpower_text[0].replace(",", ".").replace(" ", "")) * multiplicator
             feedin =  0  # float(self.driver.find_element(by=By.ID, value='feedin').text.split(" ")[0].replace(",", ".").replace(" ", ""))
             selfcsmp = 0 # float(self.driver.find_element(by=By.ID, value='selfcsmp').text.split(" ")[0].replace(",", ".").replace(" ", ""))
             gridcsmp = 0  # float(self.driver.find_element(by=By.ID, value='gridcsmp').text.split(" ")[0].replace(",", ".").replace(" ", ""))
-            
+   
             csmp_text = self.driver.find_element(by=By.ID, value='csmp').text.split(" ")
             multiplicator = 1000 if "k" in csmp_text[1] else 1
             csmp = float(csmp_text[0].replace(",", ".").replace(" ", "")) * multiplicator
-
+      
             batterypower = float(self.driver.find_element(by=By.ID, value='ctl00_ContentPlaceHolder1_SelfConsumption_Status1_BatteryPower').text.split(" ")[0])
             batterystatus = float(self.driver.find_element(by=By.ID, value='ctl00_ContentPlaceHolder1_SelfConsumption_Status1_BatteryChargeStatus').text.split(" ")[0])
 
             energy_data = EnergyData(pvpower, feedin, selfcsmp, gridcsmp, csmp, batterypower, batterystatus)
             return energy_data
-        except (ValueError, IndexError) as e:
+        except (ValueError, IndexError, TypeError) as e:
+
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            telegram_bot_sendtext(f"{exc_type, fname, exc_tb.tb_lineno}")
             print(exc_type, fname, exc_tb.tb_lineno)
             return None
         
     def reset(self):
-        #self.driver.close()
-        #time.sleep(4)
         self.__init__()
 
 

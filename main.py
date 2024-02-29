@@ -39,7 +39,7 @@ def main():
                     CEnergyController.reset()
                     no_data_counter = 0
                 continue
-
+            no_data_counter = 0
             q_pvpower.append(CEnergyData.pvpower)
             q_csmp.append(CEnergyData.csmp)
             
@@ -72,12 +72,13 @@ def main():
             for coin in coins:
                 coin.get_profitability()
                 print(coin.name, coin.revenue, coin.profitability, coin.break_even_watt, coin.price, coin.network_hashrate, coin.difficulty)
+                telegram_bot_sendtext(f"{coin.name, coin.profitability, coin.break_even_watt}")
 
             for stack in Mining_Stacks:
                 stack.update_coin()
 
             logger("Usable Power: " + str(usable_power), "info")
-
+            telegram_bot_sendtext("Usable Power: " + str(usable_power))
             if usable_power >= 0:  # turn on rigs
                 relevant_stacks = [(stack, stack.watt_efficient, stack.even_watt_rate) for stack in Mining_Stacks if (not stack.get_status() and not stack.always_on_stacks)]  # has to be off to be turned on
                 if len(relevant_stacks) == 0:  # maybe even turn on profit over efficiency
@@ -91,8 +92,9 @@ def main():
                         usable_power -= stack.efficient_watt_difference
                         #  enough power and profit sheet not activated yet
 
+                        telegram_bot_sendtext(f"turn on profit sheet for stack: {stack.name}, sheet difference: {stack.efficient_watt_difference}")
+                        telegram_bot_sendtext("Usable Power now: " + str(usable_power))
                         logger(f"turn on profit sheet for stack: {stack.name}", "info")
-                        telegram_bot_sendtext(f"turn on profit sheet for stack: {stack.name}")
                         stack.efficient_sheet = False
 
                 if usable_power <= 0:
@@ -115,7 +117,8 @@ def main():
                     #  defizit power and efficient sheet not activated yet
                     usable_power += stack.efficient_watt_difference
                     logger(f"turn on efficient sheet for stack: {stack.name}", "info")
-                    telegram_bot_sendtext(f"turn on efficient sheet for stack: {stack.name}")
+                    telegram_bot_sendtext(f"turn on efficient sheet for stack: {stack.name}, sheet difference: {stack.efficient_watt_difference}")
+                    telegram_bot_sendtext("Usable Power now: " + str(usable_power))
                     stack.efficient_sheet = True
 
                 if usable_power >= 0:

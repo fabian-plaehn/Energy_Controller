@@ -1,10 +1,11 @@
+import os
+import sys
 import time
 #from PyP100 import PyP100
 from hidden.hidden import tapo_email, tapo_password, tapo_ip_1, HIVE_API_KEY, FARM_NAME_B, FARM_NAME_H
 from coins.Coins import coins
 from HiveOS.HiveOS import Hive
-from utils import logger
-
+from utils import logger, telegram_bot_sendtext
 
 class Always_On_P100:
     def turn_on(self):
@@ -206,17 +207,24 @@ class MiningStack:
         return self.p100.get_status()
 
     def set_sheet(self):
-        if not self.p100.get_status():
-            return
+        try:
+            if (self.efficient_sheet or self.always_efficient) and not self.always_profit:
+                fs = [fs_ for fs_ in self.all_fs if fs_["name"] == self.efficient_coin][0]
+                telegram_bot_sendtext(f"Set efficient flightsheet {fs['name']}")
+            else:
+                fs = [fs_ for fs_ in self.all_fs if fs_["name"] == self.profit_coin][0]
+                telegram_bot_sendtext(f"Set profit flightsheet {fs['name']}")
 
-        if (self.efficient_sheet or self.always_efficient) and not self.always_profit:
-            fs = [fs for fs in self.all_fs if fs["name"] == self.efficient_coin][0]
-        else:
-            fs = [fs for fs in self.all_fs if fs["name"] == self.profit_coin][0]
+            logger(f"Set flightsheet {fs['name']}", "info")
+            
+            self.CHive.set_fs_all(fs["id"])
 
-        logger(f"Set flightsheet {fs['name']}", "info")
-        self.CHive.set_fs_all(fs["id"])
-        self.last_fs = fs["id"]
+        except KeyError as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            telegram_bot_sendtext("crashed in CTapo set_sheet")
+            telegram_bot_sendtext(f"{exc_type, fname, exc_tb.tb_lineno}")
+            
         
     def __repr__(self) -> str:
         return f"[{self.p100.getDeviceName()}, {self.number_pcs}, {self.get_status()}]"
@@ -225,18 +233,18 @@ class MiningStack:
     #    return f"[{self.name}, {self.number_pcs}, {self.get_status()}]"
 
 # Dose 1 2
-Mining_Stack_01 = MiningStack(6, ip="192.168.0.100", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_H, available_worker_ids=[8395042, 8394783, 8436278, 8361530, 8397124, 8395108]))
+Mining_Stack_01 = MiningStack(6, ip="192.168.0.100", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_B, available_worker_ids=[8395042, 8394783, 8436278, 8361530, 8397124, 8395108]))
 
 # Dose 1 1
-Mining_Stack_03 = MiningStack(6, ip="192.168.0.102", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_H, available_worker_ids=[8327057, 8395188, 8616656, 8395138, 8395190, 8436296]))
+Mining_Stack_03 = MiningStack(6, ip="192.168.0.102", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_B, available_worker_ids=[8327057, 8395188, 8616656, 8395138, 8395190, 8436296]))
 
 # Dose 2 1
-Mining_Stack_02 = MiningStack(4, ip="192.168.0.101", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_H, available_worker_ids=[8436337, 8319532, 8397123, 8307350]))
+Mining_Stack_02 = MiningStack(4, ip="192.168.0.101", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_B, available_worker_ids=[8436337, 8319532, 8397123, 8307350]))
 
 # Dose 2 2
-Mining_Stack_04 = MiningStack(3, ip="192.168.0.124", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_H, available_worker_ids=[8327018, 8327118, 8317656]))
+Mining_Stack_04 = MiningStack(3, ip="192.168.0.124", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_B, available_worker_ids=[8327018, 8327118, 8317656]))
 
-Mining_Stack_05 = MiningStack(6, ip="192.168.0.100", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_B, available_worker_ids=None), always_on_stacks=True, always_profit=True)
+Mining_Stack_05 = MiningStack(6, ip="192.168.0.100", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_H, available_worker_ids=None), always_on_stacks=True, always_profit=True)
 
 
 
