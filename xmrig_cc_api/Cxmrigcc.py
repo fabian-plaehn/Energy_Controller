@@ -1,6 +1,6 @@
 import requests
 import json
-from hidden.hidden import WALLET_RTC, WALLET_ZEPH, WALLET_XDAG, WALLET_YADA
+from hidden.hidden import WALLET_RTC, WALLET_ZEPH, WALLET_XDAG, WALLET_YADA, xmrig_server_ip
 
 
 class Sheet:
@@ -26,7 +26,7 @@ class Cxmrig:
         
     def set_sheet(self, name):
         sheet = [sheet for sheet in Sheets if sheet.name == name][0]
-        api_url = "http://admin:pass@100.96.210.95:3344/admin/getClientConfig?clientId=template_BASE"
+        api_url = f"http://admin:pass@{xmrig_server_ip}/admin/getClientConfig?clientId=template_BASE"
         response = requests.get(api_url)
         print(response)
         base_sheet = response.json()
@@ -37,12 +37,12 @@ class Cxmrig:
             base_sheet["pools"][0]["pass"] = sheet.password
             
 
-            api_url = f"http://admin:pass@100.96.210.95:3344/admin/setClientConfig?clientId={worker_id}"
+            api_url = f"http://admin:pass@{xmrig_server_ip}/admin/setClientConfig?clientId={worker_id}"
             headers = {"Content-Type":"application/json"}
             response = requests.post(api_url, headers=headers, json=base_sheet)
             print(response)
     
-            api_url = f"http://admin:pass@100.96.210.95:3344/admin/setClientCommand?clientId={worker_id}"
+            api_url = f"http://admin:pass@{xmrig_server_ip}/admin/setClientCommand?clientId={worker_id}"
             headers = {"Content-Type":"application/json"}
             response = requests.post(api_url, headers=headers, json={"control_command":{"command":"UPDATE_CONFIG"}})
             print(response)
