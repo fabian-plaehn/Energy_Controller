@@ -66,20 +66,17 @@ class EnergyController:
             return None
         
     def reset(self):
-        self.driver.close()
-        time.sleep(4)
+        #self.driver.close()
+        #time.sleep(4)
         self.__init__()
 
 
 if __name__ == "__main__":
     test_C = EnergyController()
-    for i in range(5):
-        print(test_C.get_data())
-        time.sleep(5)
-    test_C.reset()
-    for i in range(5):
-        print(test_C.get_data())
-        time.sleep(5)
-    
+    for _ in range(5):
+        for i in range(5):
+            print(test_C.get_data())
+            time.sleep(1)
+        test_C.reset()
 
 
