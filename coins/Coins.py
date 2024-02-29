@@ -7,6 +7,10 @@ import pandas as pd
 from pycoingecko import CoinGeckoAPI
 import requests
 from requests import request
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as ec
 
 Watt_Costs_Own = 0.08
 Watt_Costs_All_In = 0.4
@@ -64,14 +68,16 @@ class CoinStatsBase:
                 return
         if self.market == "xeggex":
             try:
-                response = request("GET", f'https://api.xeggex.com/api/v2/market/candles?symbol={self.xeggex_ticker}%2FUSDT&from={time.time() - 60 * 60 * 24}&to={time.time()}&resolution=60&countBack=24&firstDataRequest=1')
+                #response = request("GET", f'https://api.xeggex.com/api/v2/market/candles?symbol={self.xeggex_ticker}%2FUSDT&from={time.time() - 60 * 60 * 24}&to={time.time()}&resolution=60&countBack=24&firstDataRequest=1')
                 price = 0
-
                 '''for bar in response.json()["bars"]:
                     price += bar["close"]
                 price /= len(response.json()["bars"])'''
-                price = response.json()["bars"][-1]["close"]
-
+                #price = response.json()["bars"][-1]["close"]
+                #print(self.xeggex_ticker)
+                response = request("GET", f"https://api.xeggex.com/api/v2/market/getbysymbol/{self.xeggex_ticker}%2FUSDT")
+                #print(response.json())
+                price = float(response.json()["lastPrice"])
                 self.price = price * 0.93
 
             except Exception as e:
@@ -108,6 +114,7 @@ def find_text(text, text_to_find):
     idx = text.find(text_to_find)
     start = idx + len(text_to_find)
     i = 1
+
     for i in range(1, 15):
         try:
             value = float(text[start:start + i].replace(",", ""))
@@ -128,16 +135,27 @@ class YDAStats(CoinStatsBase):
             'Connection': 'keep-alive'}
         self.difficulty = None
         self.price = None
-        self.block_reward = 12.5
-        self.hashrate = 11500
-        self.watt = 0.115
+        self.block_reward = 11.25
+        self.hashrate = 12000
+        self.watt = 0.120
         self.name = "YDA"
         self.cg_id = 'yadacoin'
         self.xeggex_ticker = "YDA"
         self.market = "xeggex"
+        self.driver = webdriver.Firefox()
+            
 
     def get_difficulty(self):
-        self.difficulty, _, _, _ = find_text("https://yadacoin.io/explorer", "Difficulty: ")
+        self.driver.get("https://yadacoin.io/explorer")
+        #WebDriverWait(self.driver, 5).until(ec.((By.XPATH, "/html/body/main/div/section/div/app-root/app-search-form/h3[3]")))
+        for _ in range(15):
+            difficulty = find_text(self.driver.find_element(by=By.XPATH, value="/html/body/main/div/section/div/app-root/app-search-form/h3[3]").text, "Difficulty: ")[0]
+            if difficulty is not None:
+                self.difficulty = difficulty
+                break
+            time.sleep(3)
+        
+
 
 
 class AVN_Stats(CoinStatsBase):
@@ -295,7 +313,7 @@ avn = AVN_Stats()
 yada = YDAStats()
 vishai = VishAIStats()
 
-coins = [rtc, xdag, zeph]
+coins = [rtc, xdag, zeph, yada]
 
 if __name__ == "__main__":
     hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
@@ -308,7 +326,7 @@ if __name__ == "__main__":
     # with urllib.request.urlopen(req) as url:
     #    string = json.load(url)
     # print(string)
-    coins = [rtc, xdag, zeph, vishai]
+    coins = [rtc, xdag, zeph, yada]
 
     for coin in coins:
         coin.get_profitability()

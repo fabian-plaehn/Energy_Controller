@@ -6,6 +6,7 @@ from hidden.hidden import tapo_email, tapo_password, tapo_ip_1, HIVE_API_KEY, FA
 from coins.Coins import coins
 from HiveOS.HiveOS import Hive
 from utils import logger, telegram_bot_sendtext
+from xmrig_cc_api.Cxmrigcc import Cxmrig
 
 class Always_On_P100:
     def turn_on(self):
@@ -233,18 +234,18 @@ class MiningStack:
     #    return f"[{self.name}, {self.number_pcs}, {self.get_status()}]"
 
 # Dose 1 2
-Mining_Stack_01 = MiningStack(6, ip="192.168.0.100", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_B, available_worker_ids=[8395042, 8394783, 8436278, 8361530, 8397124, 8395108]))
+Mining_Stack_01 = MiningStack(6, ip="192.168.0.100", CHive=Cxmrig("B_FARM", ["rig1C76F3", "rig1C771C", "rig416783", "rig6F61CF", "rigC49613", "rigC4961B"]))
 
 # Dose 1 1
-Mining_Stack_03 = MiningStack(6, ip="192.168.0.102", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_B, available_worker_ids=[8327057, 8395188, 8616656, 8395138, 8395190, 8436296]))
+Mining_Stack_03 = MiningStack(6, ip="192.168.0.102", CHive=Cxmrig("B_FARM", ["rig3C086A", "rig3C08D6", "rig40B92F", "rig40B93D", "rigD3ABE7", "rigD3ABF1"]))
 
 # Dose 2 1
-Mining_Stack_02 = MiningStack(4, ip="192.168.0.101", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_B, available_worker_ids=[8436337, 8319532, 8397123, 8307350]))
+Mining_Stack_02 = MiningStack(4, ip="192.168.0.101", CHive=Cxmrig("B_FARM", ["rig0040DF", "rig039E17", "rig1D1864", "rig7C4414"]))
 
 # Dose 2 2
-Mining_Stack_04 = MiningStack(3, ip="192.168.0.124", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_B, available_worker_ids=[8327018, 8327118, 8317656]))
+Mining_Stack_04 = MiningStack(3, ip="192.168.0.124", CHive=Cxmrig("B_FARM", ["rig3C08AB", "rig3C08BA", "rigC4959E"]))
 
-Mining_Stack_05 = MiningStack(6, ip="192.168.0.100", CHive=Hive(token=HIVE_API_KEY, farm_name=FARM_NAME_H, available_worker_ids=None), always_on_stacks=True, always_profit=True)
+Mining_Stack_05 = MiningStack(6, ip="192.168.0.100", CHive=Cxmrig("H_FARM", ["rig0ED8D9", "rig5E6D1A", "rig12FCF8", "rig12FD7E", "rig40B8E1", "rig40B93E", "rig40B966", "rig39527C"]), always_on_stacks=True, always_profit=True)
 
 
 
