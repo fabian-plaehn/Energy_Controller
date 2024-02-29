@@ -175,7 +175,7 @@ class MiningStack:
         self.profit_coin = None
         self.efficient_coin = None
         self.CHive = CHive
-        self.all_fs = self.CHive.get_all_fs()
+        #self.all_fs = self.CHive.get_all_fs()
         self.last_fs = 0
         self.always_on_stacks = always_on_stacks
         self.always_profit = always_profit
@@ -210,16 +210,14 @@ class MiningStack:
     def set_sheet(self):
         try:
             if (self.efficient_sheet or self.always_efficient) and not self.always_profit:
-                fs = [fs_ for fs_ in self.all_fs if fs_["name"] == self.efficient_coin][0]
-                telegram_bot_sendtext(f"Set efficient flightsheet {fs['name']}")
+                self.CHive.set_sheet(self.efficient_coin)
+                logger(f"Set efficient flightsheet {self.efficient_coin}", "info")
+                telegram_bot_sendtext(f"Set efficient flightsheet {self.efficient_coin}")
             else:
-                fs = [fs_ for fs_ in self.all_fs if fs_["name"] == self.profit_coin][0]
-                telegram_bot_sendtext(f"Set profit flightsheet {fs['name']}")
-
-            logger(f"Set flightsheet {fs['name']}", "info")
+                self.CHive.set_sheet(self.profit_coin)
+                telegram_bot_sendtext(f"Set profit flightsheet {self.profit_coin}")
+                logger(f"Set profit flightsheet {self.profit_coin}", "info")
             
-            self.CHive.set_fs_all(fs["id"])
-
         except KeyError as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -234,20 +232,20 @@ class MiningStack:
     #    return f"[{self.name}, {self.number_pcs}, {self.get_status()}]"
 
 # Dose 1 2
-Mining_Stack_01 = MiningStack(6, ip="192.168.0.100", CHive=Cxmrig("B_FARM", ["rig1C76F3", "rig1C771C", "rig416783", "rig6F61CF", "rigC49613", "rigC4961B"]))
+Mining_Stack_01 = MiningStack(6, ip="192.168.0.100", CHive=Cxmrig("B_FARM", ["rig1C76F3", "rig1C771C", "rig416783", "rig6F61CF", "rigC49613", "rigC4961B"]), always_on_stacks=False)
 
 # Dose 1 1
-Mining_Stack_03 = MiningStack(6, ip="192.168.0.102", CHive=Cxmrig("B_FARM", ["rig3C086A", "rig3C08D6", "rig40B92F", "rig40B93D", "rigD3ABE7", "rigD3ABF1"]))
+Mining_Stack_03 = MiningStack(6, ip="192.168.0.102", CHive=Cxmrig("B_FARM", ["rig3C086A", "rig3C08D6", "rig40B92F", "rig40B93D", "rigD3ABE7", "rigD3ABF1"]), always_on_stacks=False)
 
 # Dose 2 1
-Mining_Stack_02 = MiningStack(4, ip="192.168.0.101", CHive=Cxmrig("B_FARM", ["rig0040DF", "rig039E17", "rig1D1864", "rig7C4414"]))
+Mining_Stack_02 = MiningStack(4, ip="192.168.0.101", CHive=Cxmrig("B_FARM", ["rig0040DF", "rig039E17", "rig1D1864", "rig7C4414"]), always_on_stacks=False)
 
 # Dose 2 2
-Mining_Stack_04 = MiningStack(3, ip="192.168.0.124", CHive=Cxmrig("B_FARM", ["rig3C08AB", "rig3C08BA", "rigC4959E"]))
+Mining_Stack_04 = MiningStack(3, ip="192.168.0.124", CHive=Cxmrig("B_FARM", ["rig3C08AB", "rig3C08BA", "rigC4959E"]), always_on_stacks=False)
 
 Mining_Stack_05 = MiningStack(6, ip="192.168.0.100", CHive=Cxmrig("H_FARM", ["rig0ED8D9", "rig5E6D1A", "rig12FCF8", "rig12FD7E", "rig40B8E1", "rig40B93E", "rig40B966", "rig39527C"]), always_on_stacks=True, always_profit=True)
 
-
+#8ab missing
 
 
             
