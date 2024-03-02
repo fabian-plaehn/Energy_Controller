@@ -22,9 +22,9 @@ class EnergyData:
 
 
 class EnergyController:
+    self.driver = webdriver.Firefox()
     def __init__(self):
         try:
-            self.driver = webdriver.Firefox()
             self.driver.get("https://www.sunnyportal.com/Templates/Start.aspx?ReturnUrl=%2fFixedPages%2fDashboard.aspx")
 
             ## LOGIN ##
