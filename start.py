@@ -1,0 +1,28 @@
+from multiprocessing import Process
+import time
+from utils import telegram_bot_sendtext, kill_ff
+from main import main
+
+
+def start():
+    while True:
+        p = Process(target=main)
+        p.start()
+        p.join()
+        telegram_bot_sendtext("clean up")
+        
+        time.sleep(5)
+        # clean up
+        for _ in range(2):
+            while True:
+                try:
+                    kill_ff()
+                    break
+                except:
+                    break
+        telegram_bot_sendtext("restart main")
+
+
+
+if __name__ == "__main__":
+    start()

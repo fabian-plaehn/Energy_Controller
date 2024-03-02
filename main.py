@@ -1,20 +1,18 @@
-from collections import deque
-import os
-import sys
-import time
-from typing import List
-from utils import logger, maximize_with_constraint, minimize_with_constraint, telegram_bot_sendtext
 
-from numpy import mean
-from sunny.CSunny import EnergyController
-
-telegram_bot_sendtext(f"import mining stacks")
-from tapo.CTapo import Mining_Stacks, MiningStack
-
-from coins.Coins import coins
-
-telegram_bot_sendtext(f"imports done")
 def main():
+    from collections import deque
+    import os
+    import sys
+    import time
+    from typing import List
+    from utils import Main_Restart_Exception, logger, maximize_with_constraint, minimize_with_constraint, telegram_bot_sendtext
+    from numpy import mean
+    from sunny.CSunny import EnergyController
+    telegram_bot_sendtext(f"import mining stacks")
+    from tapo.CTapo import Mining_Stacks, MiningStack
+    from coins.Coins import coins
+    telegram_bot_sendtext(f"imports done")
+    
     # init classes
     telegram_bot_sendtext(f"init Energy class")
     CEnergyController = EnergyController()
@@ -61,7 +59,9 @@ def main():
             elif CEnergyData.batterystatus > 20:  # draw until x percent battery
                 usable_power = 0  # dont add or shutdown rigs
                 if CEnergyData.batterypower > CEnergyData.max_battery_power:  # dont exceed battery power limit else you will pull from grid
-                    usable_power = CEnergyData.max_battery_power - CEnergyData.batterypower  # go down by difference
+                    usable_power = pvpower - csmp + CEnergyData.max_battery_power  # go down by difference
+                    # TODO
+                    # actually go down more e.g. csmp=25k pv=10k -> battery=4k but go down by so that csmp-pv < 4k
                 elif CEnergyData.batterystatus > 60:  # greater than 60 not exceeding the powerlimit boot up some rigs
                     usable_power = max(CEnergyData.max_battery_power - CEnergyData.batterypower-500, 0)
                     
@@ -135,7 +135,10 @@ def main():
                 
             for stack in Mining_Stacks:
                 stack.set_sheet()
-                
+
+    except Main_Restart_Exception:
+        telegram_bot_sendtext("Main_Restart_Exception raised")
+        return 0
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]

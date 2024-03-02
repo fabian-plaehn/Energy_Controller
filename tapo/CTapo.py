@@ -159,7 +159,6 @@ class MiningStack:
             logger("Always On Stacks", "info")
             self.p100 = Always_On_P100()
         else:
-            print(tapo_email, tapo_password)
             self.p100 = P100(ip, tapo_email, tapo_password)
         self.name = self.p100.getDeviceName()
         #print(self.name, ip, self.p100.get_status())

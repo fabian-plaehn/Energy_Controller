@@ -2,12 +2,13 @@ import os
 import sys
 import time
 from dataclasses import dataclass
+from selenium.common.exceptions import TimeoutException
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 from hidden.hidden import sunny_username, sunny_password
-from utils import telegram_bot_sendtext
+from utils import telegram_bot_sendtext, Main_Restart_Exception
 
 @dataclass
 class EnergyData:
@@ -28,16 +29,19 @@ class EnergyController:
             self.driver.get("https://www.sunnyportal.com/Templates/Start.aspx?ReturnUrl=%2fFixedPages%2fDashboard.aspx")
 
             ## LOGIN ##
-            WebDriverWait(self.driver, 5).until(ec.element_to_be_clickable((By.ID, "onetrust-reject-all-handler"))).click()
+            WebDriverWait(self.driver, 60).until(ec.element_to_be_clickable((By.ID, "onetrust-reject-all-handler"))).click()
             self.driver.find_element(By.ID, "txtUserName").send_keys(sunny_username)
             self.driver.find_element(By.ID, "txtPassword").send_keys(sunny_password)
             time.sleep(1)
             WebDriverWait(self.driver, 5).until(ec.element_to_be_clickable((By.ID, "ctl00_ContentPlaceHolder1_Logincontrol1_LoginBtn"))).click()
             WebDriverWait(self.driver, 5).until(ec.element_to_be_clickable((By.XPATH, "/html/body/div[4]/div/div/div[2]/table/tbody/tr[2]/td[1]/a"))).click()  # FARM SPECIFIC
+        except TimeoutException:
+            telegram_bot_sendtext("time out exception")
+            self.driver.close()
+            raise Main_Restart_Exception()
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            
             telegram_bot_sendtext(f"{exc_type, fname, exc_tb.tb_lineno}")
             telegram_bot_sendtext("crashed in Energy init retrying ... ")
             time.sleep(5)
@@ -68,6 +72,11 @@ class EnergyController:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             telegram_bot_sendtext(f"{exc_type, fname, exc_tb.tb_lineno}")
+            try:
+                telegram_bot_sendtext(f"{pvpower_text[0]}")
+                telegram_bot_sendtext(f"{csmp_text[0]}")
+            except:
+                pass
             print(exc_type, fname, exc_tb.tb_lineno)
             return None
         

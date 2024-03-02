@@ -5,6 +5,7 @@ import string
 from time import ctime, time, sleep
 from typing import List, Tuple
 from itertools import permutations
+import psutil
 import numpy as np
 import requests
 from hidden.hidden import bot_token, bot_chatID
@@ -12,6 +13,17 @@ _debug = False
 _info = True
 _trace = False
 
+
+class Main_Restart_Exception(Exception):
+    pass
+
+
+def kill_ff():
+    for proc in psutil.process_iter():
+        # check whether the process name matches
+        if proc.name() == "firefox.exe" or proc.name() == "geckodriver.exe":
+            proc.kill()
+            
 
 def telegram_bot_sendtext(bot_message : str):
     bot_message = bot_message.replace("_", "")
