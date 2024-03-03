@@ -13,13 +13,14 @@ def start():
         
         time.sleep(5)
         # clean up
-        for _ in range(2):
+        for _ in range(5):
             while True:
                 try:
                     kill_ff()
                     break
                 except:
                     break
+            time.sleep(1)
         telegram_bot_sendtext("restart main")
 
 

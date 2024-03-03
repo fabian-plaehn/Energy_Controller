@@ -1,3 +1,4 @@
+import datetime
 import json
 import os
 import sys
@@ -11,6 +12,8 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
+import pandas as pd
+from utils import append_row, telegram_bot_sendtext
 
 Watt_Costs_Own = 0.08
 Watt_Costs_All_In = 0.4
@@ -51,7 +54,8 @@ class CoinStatsBase:
         pass
 
     def get_price(self):
-        if self.price is not None and (time.time() - self.last_price_update) < self.price_update:
+        import yfinance as yf
+        if self.price != 0 and (time.time() - self.last_price_update) < self.price_update:
             return
 
         if self.market == "coingecko":
@@ -61,8 +65,8 @@ class CoinStatsBase:
                 df.columns = ["date", "open", "high", "low", "close"]
                 df["date"] = pd.to_datetime(df["date"], unit="ms")
                 df.set_index("date", inplace=True)
-
                 self.price = df["close"].iloc[-1]  # .mean()
+                
             except requests.exceptions.InvalidHeader:
                 print("invalid header")
                 return
@@ -70,21 +74,34 @@ class CoinStatsBase:
             try:
                 #response = request("GET", f'https://api.xeggex.com/api/v2/market/candles?symbol={self.xeggex_ticker}%2FUSDT&from={time.time() - 60 * 60 * 24}&to={time.time()}&resolution=60&countBack=24&firstDataRequest=1')
                 price = 0
-                '''for bar in response.json()["bars"]:
-                    price += bar["close"]
-                price /= len(response.json()["bars"])'''
-                #price = response.json()["bars"][-1]["close"]
-                #print(self.xeggex_ticker)
                 response = request("GET", f"https://api.xeggex.com/api/v2/market/getbysymbol/{self.xeggex_ticker}%2FUSDT")
-                #print(response.json())
                 price = float(response.json()["lastPrice"])
-                self.price = price * 0.93
+                usd2eur = yf.download(tickers = 'USDEUR=X', period ='1d', interval = '15m', progress=False)
+                self.price = price * usd2eur["Close"].iloc[-1]
 
             except Exception as e:
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
                 print(exc_type, fname, exc_tb.tb_lineno)
+                telegram_bot_sendtext("crashed in coins")
+                telegram_bot_sendtext(f"{exc_type, fname, exc_tb.tb_lineno}")  
                 pass
+            
+        if self.price != 0:
+            self.last_price_update = time.time()
+            try:
+                df = pd.read_csv(f"dataset/{self.name}.txt")
+            except FileNotFoundError:
+                with open(f"dataset/{self.name}.txt", "w") as f:
+                    f.write(f"Time,{self.name}_Price[EUR]")
+                df = pd.read_csv(f"dataset/{self.name}.txt")
+            date_now = datetime.datetime.now().strftime("%d/%m/%Y")
+            if date_now not in list(df["Time"]):
+                new_row = pd.Series({"Time":date_now, f"{self.name}_Price[EUR]":self.price})
+                df = append_row(df, new_row)
+            else:
+                df[f"{self.name}_Price[EUR]"][(df["Time"] == date_now)] = self.price
+            df.to_csv(f"dataset/{self.name}.txt", sep=",", index=False)
 
     def get_profitability(self):
         self.get_difficulty()

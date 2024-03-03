@@ -153,7 +153,7 @@ class P100(Switchable):
 
 
 class MiningStack:
-    def __init__(self, number_pcs, ip, CHive: Hive, always_on_stacks=False, efficient_sheet=True, always_profit=False, always_efficient=False):
+    def __init__(self, number_pcs, ip, CHive: Cxmrig, always_on_stacks=False, efficient_sheet=True, always_profit=False, always_efficient=False):
 
         if always_on_stacks:
             logger("Always On Stacks", "info")
@@ -174,11 +174,17 @@ class MiningStack:
         self.profit_coin = None
         self.efficient_coin = None
         self.CHive = CHive
+        
         #self.all_fs = self.CHive.get_all_fs()
         self.last_fs = 0
         self.always_on_stacks = always_on_stacks
         self.always_profit = always_profit
         self.always_efficient = always_efficient
+        
+        self.current_coin = None
+        self.current_watt = 0
+        self.current_revenue = 0
+        self.set_sheet_time = time.time()
 
     def turn_on(self):
         logger("Turning on" + str(self.p100.getDeviceName()), "info")
@@ -193,11 +199,13 @@ class MiningStack:
     def update_coin(self):
         coins.sort(key=lambda x: x.profitability, reverse=True)
         self.profit_coin = coins[0].name
+        self.revenue_profit = coins[0].revenue * self.number_pcs
         self.profit = coins[0].profitability * self.number_pcs
         self.watt = coins[0].watt * self.number_pcs * 1000
 
         coins.sort(key=lambda x: x.break_even_watt, reverse=True)
         self.efficient_coin = coins[0].name
+        self.revenue_efficient = coins[0].revenue * self.number_pcs
         self.watt_efficient = coins[0].watt * self.number_pcs * 1000
         self.even_watt_rate = coins[0].break_even_watt * self.number_pcs
 
@@ -207,13 +215,20 @@ class MiningStack:
         return self.p100.get_status()
 
     def set_sheet(self):
+        self.set_sheet_time = time.time()
         try:
             if (self.efficient_sheet or self.always_efficient) and not self.always_profit:
                 self.CHive.set_sheet(self.efficient_coin)
+                self.current_coin = self.efficient_coin
+                self.current_watt = self.watt_efficient
+                self.current_revenue = self.revenue_efficient
                 logger(f"Set efficient flightsheet {self.efficient_coin}", "info")
                 telegram_bot_sendtext(f"Set efficient flightsheet {self.efficient_coin}")
             else:
                 self.CHive.set_sheet(self.profit_coin)
+                self.current_coin = self.profit_coin
+                self.current_watt = self.watt
+                self.current_revenue = self.revenue_profit
                 telegram_bot_sendtext(f"Set profit flightsheet {self.profit_coin}")
                 logger(f"Set profit flightsheet {self.profit_coin}", "info")
             
@@ -242,7 +257,7 @@ Mining_Stack_02 = MiningStack(4, ip="192.168.0.101", CHive=Cxmrig("B_FARM", ["ri
 # Dose 2 2
 Mining_Stack_04 = MiningStack(3, ip="192.168.0.124", CHive=Cxmrig("B_FARM", ["rig3C08AB", "rig3C08BA", "rigC4959E"]), always_on_stacks=False)
 
-Mining_Stack_05 = MiningStack(6, ip="192.168.0.100", CHive=Cxmrig("H_FARM", ["rig0ED8D9", "rig5E6D1A", "rig12FCF8", "rig12FD7E", "rig40B8E1", "rig40B93E", "rig40B966", "rig39527C"]), always_on_stacks=True, always_profit=True)
+Mining_Stack_05 = MiningStack(8, ip="192.168.0.100", CHive=Cxmrig("H_FARM", ["rig0ED8D9", "rig5E6D1A", "rig12FCF8", "rig12FD7E", "rig40B8E1", "rig40B93E", "rig40B966", "rig39527C"]), always_on_stacks=True, always_profit=True)
 
 #8ab missing
 

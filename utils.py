@@ -5,6 +5,7 @@ import string
 from time import ctime, time, sleep
 from typing import List, Tuple
 from itertools import permutations
+import pandas as pd
 import psutil
 import numpy as np
 import requests
@@ -23,6 +24,13 @@ def kill_ff():
         # check whether the process name matches
         if proc.name() == "firefox.exe" or proc.name() == "geckodriver.exe":
             proc.kill()
+            
+            
+def append_row(df, row):
+    return pd.concat([
+                df, 
+                pd.DataFrame([row], columns=row.index)]
+           ).reset_index(drop=True)
             
 
 def telegram_bot_sendtext(bot_message : str):

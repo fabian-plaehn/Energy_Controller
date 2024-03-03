@@ -1,4 +1,21 @@
 
+import datetime
+import pandas as pd
+
+from utils import append_row
+
+
+class tracking_data:
+    def __init__(self, profit, watt) -> None:
+        self.profit = profit
+        self.watt = watt
+        
+    def __add__(self, other):
+        return tracking_data(self.profit + other.profit, self.watt + other.watt)
+
+    def __repr__(self) -> str:
+        return f"proft: {self.profit}, watt: {self.watt}"
+
 def main():
     from collections import deque
     import os
@@ -23,7 +40,7 @@ def main():
     q_csmp = deque(maxlen=20)
     
     no_data_counter = 0
-    no_data_max_count = 20
+    no_data_max_count = 10
     try:
         while True:
             CEnergyData = CEnergyController.get_data()
@@ -31,7 +48,7 @@ def main():
                 logger("No data available", "info")
                 telegram_bot_sendtext("No data available")
                 no_data_counter += 1
-                time.sleep(2)
+                time.sleep(1)
                 
                 if no_data_counter >= no_data_max_count:
                     CEnergyController.reset()
@@ -97,13 +114,14 @@ def main():
                         logger(f"turn on profit sheet for stack: {stack.name}", "info")
                         stack.efficient_sheet = False
 
-                if usable_power <= 0:
-                    continue
-                stacks_to_turn_on: List[MiningStack] = [x[0] for x in maximize_with_constraint(relevant_stacks, abs(usable_power))]
+                if usable_power > 0:    
+                    stacks_to_turn_on: List[MiningStack] = [x[0] for x in maximize_with_constraint(relevant_stacks, abs(usable_power))]
 
-                for stack in stacks_to_turn_on:
-                    telegram_bot_sendtext(f"Turn on: {stack.name}")
-                    stack.turn_on()
+                    for stack in stacks_to_turn_on:
+                        telegram_bot_sendtext(f"Turn on: {stack.name}")
+                        stack.turn_on()
+                    
+                
             else:  # turn off rigs
                 # switch from profit to efficiency
                 relevant_stacks = [(stack, stack.watt_efficient, stack.even_watt_rate) for stack in Mining_Stacks if (stack.get_status() and not stack.always_on_stacks)]  # has to be on to be turned off
@@ -121,21 +139,78 @@ def main():
                     telegram_bot_sendtext("Usable Power now: " + str(usable_power))
                     stack.efficient_sheet = True
 
-                if usable_power >= 0:
-                    continue
-                stacks_to_turn_off: List[MiningStack] = [x[0] for x in minimize_with_constraint(relevant_stacks, abs(usable_power))]
-                
-                if len(stacks_to_turn_off) == 0:  # minimize return list of rigs with consumption higher than defizit
-                    # if its not possible bcs the defizit is too high list is empty -> then turn off everything
-                    stacks_to_turn_off = [stack for stack in Mining_Stacks if (stack.get_status() and not stack.always_on_stacks)]  # has to be on to be turned off
+                if usable_power < 0:
+                    stacks_to_turn_off: List[MiningStack] = [x[0] for x in minimize_with_constraint(relevant_stacks, abs(usable_power))]
+                    
+                    if len(stacks_to_turn_off) == 0:  # minimize return list of rigs with consumption higher than defizit
+                        # if its not possible bcs the defizit is too high list is empty -> then turn off everything
+                        stacks_to_turn_off = [stack for stack in Mining_Stacks if (stack.get_status() and not stack.always_on_stacks)]  # has to be on to be turned off
 
-                for stack in stacks_to_turn_off:
-                    telegram_bot_sendtext(f"Turn off: {stack.name}")
-                    stack.turn_off()
+                    for stack in stacks_to_turn_off:
+                        telegram_bot_sendtext(f"Turn off: {stack.name}")
+                        stack.turn_off()
                 
+            dataset = {}
+            for stack in Mining_Stacks:
+                if stack.get_status():
+                    if stack.CHive.farm_name not in dataset:
+                        dataset[stack.CHive.farm_name] = {}
+                    if stack.current_coin not in dataset[stack.CHive.farm_name]:
+                        dataset[stack.CHive.farm_name][stack.current_coin] = tracking_data(0, 0)
+                    dataset[stack.CHive.farm_name][stack.current_coin] += tracking_data(stack.current_revenue, stack.current_watt)
+
+            print(dataset)
+            for key, value in dataset.items():
+                #  key # farm name
+                #  value # dict{Coin:tracking_data}
+                sum_track = tracking_data(0, 0)
+                for key_c, value_c in value.items():
+                    sum_track += value_c
+                    try:
+                        df = pd.read_csv(f"dataset/{key}/{key_c}.txt")
+                    except FileNotFoundError:
+                        try:
+                            os.mkdir(f"dataset/{key}")
+                        except Exception:
+                            pass
+                        with open(f"dataset/{key}/{key_c}.txt", "w") as f:
+                            f.write(f"Time,kWh,Product_Day")
+                        df = pd.read_csv(f"dataset/{key}/{key_c}.txt")
+                            
+                    date_now = datetime.datetime.now().strftime("%d/%m/%Y")
+                    if date_now not in list(df["Time"]):
+                        new_row = pd.Series({"Time":date_now,"kWh":value_c.watt/1000*(time.time()-stack.set_sheet_time)/(60*60),
+                                             "Product_Day":value_c.profit*(time.time()-stack.set_sheet_time)/(24*60*60)})
+                        df = append_row(df, new_row)
+                    else:
+                        df[f"kWh"][(df["Time"] == date_now)] += value_c.watt/1000*(time.time()-stack.set_sheet_time)/(60*60)
+                        df[f"Product_Day"][(df["Time"] == date_now)] += value_c.profit*(time.time()-stack.set_sheet_time)/(24*60*60)
+                    df.to_csv(f"dataset/{key}/{key_c}.txt", sep=",", index=False)
+                try:
+                    df = pd.read_csv(f"dataset/{key}/summation.txt")
+                except FileNotFoundError:
+                    try:
+                        os.mkdir(f"dataset/{key}")
+                    except Exception:
+                        pass
+                    with open(f"dataset/{key}/summation.txt", "w") as f:
+                        f.write(f"Time,kWh,Product_Day")
+                    df = pd.read_csv(f"dataset/{key}/summation.txt")
+                        
+                date_now = datetime.datetime.now().strftime("%d/%m/%Y")
+                if date_now not in list(df["Time"]):
+                    new_row = pd.Series({"Time":date_now,"kWh":sum_track.watt/1000*(time.time()-stack.set_sheet_time)/(60*60),
+                                        "Product_Day":sum_track.profit*(time.time()-stack.set_sheet_time)/(24*60*60)})
+                    df = append_row(df, new_row)
+                else:
+                    df[f"kWh"][(df["Time"] == date_now)] += sum_track.watt/1000*(time.time()-stack.set_sheet_time)/(60*60)
+                    df[f"Product_Day"][(df["Time"] == date_now)] += sum_track.profit*(time.time()-stack.set_sheet_time)/(24*60*60)
+                df.to_csv(f"dataset/{key}/summation.txt", sep=",", index=False)
+                    
             for stack in Mining_Stacks:
                 stack.set_sheet()
-
+                
+            # dataset
     except Main_Restart_Exception:
         telegram_bot_sendtext("Main_Restart_Exception raised")
         return 0
