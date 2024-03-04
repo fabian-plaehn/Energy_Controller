@@ -1,10 +1,4 @@
 
-import datetime
-import pandas as pd
-
-from utils import append_row
-
-
 class tracking_data:
     def __init__(self, profit, watt) -> None:
         self.profit = profit
@@ -18,6 +12,9 @@ class tracking_data:
 
 def main():
     from collections import deque
+    import datetime
+    import pandas as pd
+    from utils import append_row
     import os
     import sys
     import time

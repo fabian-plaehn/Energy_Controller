@@ -13,7 +13,21 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 import pandas as pd
-from utils import append_row, telegram_bot_sendtext
+from hidden.hidden import bot_chatID, bot_token
+
+
+def append_row(df, row):
+    return pd.concat([
+                df, 
+                pd.DataFrame([row], columns=row.index)]
+           ).reset_index(drop=True)
+            
+
+def telegram_bot_sendtext(bot_message : str):
+    bot_message = bot_message.replace("_", "")
+    send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID + '&parse_mode=Markdown&text=' + bot_message
+    response = requests.get(send_text)
+    return response.json()
 
 Watt_Costs_Own = 0.08
 Watt_Costs_All_In = 0.4
@@ -78,6 +92,20 @@ class CoinStatsBase:
                 price = float(response.json()["lastPrice"])
                 usd2eur = yf.download(tickers = 'USDEUR=X', period ='1d', interval = '15m', progress=False)
                 self.price = price * usd2eur["Close"].iloc[-1]
+                
+                try:
+                    df = pd.read_csv(f"dataset/USD.txt")
+                except FileNotFoundError:
+                    with open(f"dataset/USD.txt", "w") as f:
+                        f.write(f"Time,USD_Price[EUR]")
+                    df = pd.read_csv(f"dataset/USD.txt")
+                date_now = datetime.datetime.now().strftime("%d/%m/%Y")
+                if date_now not in list(df["Time"]):
+                    new_row = pd.Series({"Time":date_now, f"USD_Price[EUR]":usd2eur["Close"].iloc[-1]})
+                    df = append_row(df, new_row)
+                else:
+                    df[f"USD_Price[EUR]"][(df["Time"] == date_now)] = usd2eur["Close"].iloc[-1]
+                df.to_csv(f"dataset/USD.txt", sep=",", index=False)
 
             except Exception as e:
                 exc_type, exc_obj, exc_tb = sys.exc_info()

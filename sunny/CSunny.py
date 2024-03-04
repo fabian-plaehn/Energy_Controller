@@ -73,8 +73,9 @@ class EnergyController:
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             telegram_bot_sendtext(f"{exc_type, fname, exc_tb.tb_lineno}")
             try:
-                telegram_bot_sendtext(f"{pvpower_text[0]}")
-                telegram_bot_sendtext(f"{csmp_text[0]}")
+                telegram_bot_sendtext(f"pvpower_text: {pvpower_text[0]}")
+                telegram_bot_sendtext(f"csmp_text: {csmp_text[0]}")
+                telegram_bot_sendtext(f"battery_power_text: {self.driver.find_element(by=By.ID, value='ctl00_ContentPlaceHolder1_SelfConsumption_Status1_BatteryPower').text}")
             except:
                 pass
             print(exc_type, fname, exc_tb.tb_lineno)
