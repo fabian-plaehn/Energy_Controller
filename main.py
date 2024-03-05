@@ -37,7 +37,7 @@ def main():
     q_csmp = deque(maxlen=20)
     
     no_data_counter = 0
-    no_data_max_count = 10
+    no_data_max_count = 20
     try:
         while True:
             CEnergyData = CEnergyController.get_data()

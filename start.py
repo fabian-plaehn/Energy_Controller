@@ -10,7 +10,6 @@ def start():
         p.start()
         p.join()
         telegram_bot_sendtext("clean up")
-        
         time.sleep(5)
         # clean up
         for _ in range(5):
