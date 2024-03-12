@@ -23,51 +23,52 @@ class EnergyData:
 
 
 class EnergyController:
-    driver = webdriver.Firefox()
+    #driver = webdriver.Firefox()
     def __init__(self):
-        try:
-            self.driver.get("https://www.sunnyportal.com/Templates/Start.aspx?ReturnUrl=%2fFixedPages%2fDashboard.aspx")
-            ## LOGIN ##
-            WebDriverWait(self.driver, 60).until(ec.element_to_be_clickable((By.ID, "onetrust-reject-all-handler"))).click()
-            time.sleep(5)
-            self.driver.find_element(By.ID, "txtUserName").send_keys(sunny_username)
-            time.sleep(5)
-            self.driver.find_element(By.ID, "txtPassword").send_keys(sunny_password)
-            time.sleep(5)
-            WebDriverWait(self.driver, 5).until(ec.element_to_be_clickable((By.ID, "ctl00_ContentPlaceHolder1_Logincontrol1_LoginBtn"))).click()
-            time.sleep(2)
-            WebDriverWait(self.driver, 5).until(ec.element_to_be_clickable((By.XPATH, "/html/body/div[4]/div/div/div[2]/table/tbody/tr[2]/td[1]/a"))).click()  # FARM SPECIFIC
-        except TimeoutException:
-            telegram_bot_sendtext("time out exception")
-            self.driver.close()
-            raise Main_Restart_Exception()
-        except Exception as e:
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            telegram_bot_sendtext(f"{exc_type, fname, exc_tb.tb_lineno}")
-            telegram_bot_sendtext("crashed in Energy init retrying ... ")
-            time.sleep(5)
-            self.__init__()
+        pass
+        #try:
+        #    self.driver.get("https://www.sunnyportal.com/Templates/Start.aspx?ReturnUrl=%2fFixedPages%2fDashboard.aspx")
+        #    ## LOGIN ##
+        #    WebDriverWait(self.driver, 60).until(ec.element_to_be_clickable((By.ID, "onetrust-reject-all-handler"))).click()
+        #    time.sleep(5)
+        #    self.driver.find_element(By.ID, "txtUserName").send_keys(sunny_username)
+        #    time.sleep(5)
+        #    self.driver.find_element(By.ID, "txtPassword").send_keys(sunny_password)
+        #    time.sleep(5)
+        #    WebDriverWait(self.driver, 5).until(ec.element_to_be_clickable((By.ID, "ctl00_ContentPlaceHolder1_Logincontrol1_LoginBtn"))).click()
+        #    time.sleep(2)
+        #    WebDriverWait(self.driver, 5).until(ec.element_to_be_clickable((By.XPATH, "/html/body/div[4]/div/div/div[2]/table/tbody/tr[2]/td[1]/a"))).click()  # FARM SPECIFIC
+        #except TimeoutException:
+        #    telegram_bot_sendtext("time out exception")
+        #    self.driver.close()
+        #    raise Main_Restart_Exception()
+        #except Exception as e:
+        #    exc_type, exc_obj, exc_tb = sys.exc_info()
+        #    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        #    telegram_bot_sendtext(f"{exc_type, fname, exc_tb.tb_lineno}")
+        #    telegram_bot_sendtext("crashed in Energy init retrying ... ")
+        #    time.sleep(5)
+        #    self.__init__()
             
     def get_data(self):
         try:
-            pvpower_text = self.driver.find_element(by=By.ID, value='pvpower').text.split(" ")
-            multiplicator = 1000 if "k" in pvpower_text[1] else 1
+            #pvpower_text = self.driver.find_element(by=By.ID, value='pvpower').text.split(" ")
+            #multiplicator = 1000 if "k" in pvpower_text[1] else 1
        
-            pvpower = float(pvpower_text[0].replace(",", ".").replace(" ", "")) * multiplicator
-            feedin =  0  # float(self.driver.find_element(by=By.ID, value='feedin').text.split(" ")[0].replace(",", ".").replace(" ", ""))
-            selfcsmp = 0 # float(self.driver.find_element(by=By.ID, value='selfcsmp').text.split(" ")[0].replace(",", ".").replace(" ", ""))
-            gridcsmp = 0  # float(self.driver.find_element(by=By.ID, value='gridcsmp').text.split(" ")[0].replace(",", ".").replace(" ", ""))
+            #pvpower = float(pvpower_text[0].replace(",", ".").replace(" ", "")) * multiplicator
+            #feedin =  0  # float(self.driver.find_element(by=By.ID, value='feedin').text.split(" ")[0].replace(",", ".").replace(" ", ""))
+            #selfcsmp = 0 # float(self.driver.find_element(by=By.ID, value='selfcsmp').text.split(" ")[0].replace(",", ".").replace(" ", ""))
+            #gridcsmp = 0  # float(self.driver.find_element(by=By.ID, value='gridcsmp').text.split(" ")[0].replace(",", ".").replace(" ", ""))
    
-            csmp_text = self.driver.find_element(by=By.ID, value='csmp').text.split(" ")
-            multiplicator = 1000 if "k" in csmp_text[1] else 1
-            csmp = float(csmp_text[0].replace(",", ".").replace(" ", "")) * multiplicator
+            #csmp_text = self.driver.find_element(by=By.ID, value='csmp').text.split(" ")
+            #multiplicator = 1000 if "k" in csmp_text[1] else 1
+            #csmp = float(csmp_text[0].replace(",", ".").replace(" ", "")) * multiplicator
       
-            batterypower = float(self.driver.find_element(by=By.ID, value='ctl00_ContentPlaceHolder1_SelfConsumption_Status1_BatteryPower').text.split(" ")[0])
-            batterystatus = float(self.driver.find_element(by=By.ID, value='ctl00_ContentPlaceHolder1_SelfConsumption_Status1_BatteryChargeStatus').text.split(" ")[0])
+            #batterypower = float(self.driver.find_element(by=By.ID, value='ctl00_ContentPlaceHolder1_SelfConsumption_Status1_BatteryPower').text.split(" ")[0])
+            #batterystatus = float(self.driver.find_element(by=By.ID, value='ctl00_ContentPlaceHolder1_SelfConsumption_Status1_BatteryChargeStatus').text.split(" ")[0])
 
-            energy_data = EnergyData(pvpower, feedin, selfcsmp, gridcsmp, csmp, batterypower, batterystatus)
-            #energy_data = EnergyData(0, 0, 0, 0, 0, 0, 0)
+            #energy_data = EnergyData(pvpower, feedin, selfcsmp, gridcsmp, csmp, batterypower, batterystatus)
+            energy_data = EnergyData(1, 0, 0, 0, 0, 0, 0)
             return energy_data
         # ValueError on login screen, Index Error -> Site is not loading yet
         except (ValueError, NoSuchElementException) as e:
