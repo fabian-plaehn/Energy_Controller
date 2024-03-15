@@ -5,7 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2de4a752-7e31-4667-9b06-601f85562d4f" name="Changes" comment="p100 tests">
-      <change beforePath="$PROJECT_DIR$/sunny/CSunny.py" beforeDir="false" afterPath="$PROJECT_DIR$/sunny/CSunny.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -238,6 +239,8 @@
       <workItem from="1708820924741" duration="393000" />
       <workItem from="1708859306541" duration="153000" />
       <workItem from="1708966949020" duration="38000" />
+      <workItem from="1709415114876" duration="2000" />
+      <workItem from="1710286752761" duration="25000" />
     </task>
     <task id="LOCAL-00001" summary="init">
       <option name="closed" value="true" />
