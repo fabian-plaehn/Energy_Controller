@@ -1,3 +1,4 @@
+import datetime
 import json
 import os
 import sys
@@ -11,6 +12,22 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
+import pandas as pd
+from hidden.hidden import bot_chatID, bot_token
+
+
+def append_row(df, row):
+    return pd.concat([
+                df, 
+                pd.DataFrame([row], columns=row.index)]
+           ).reset_index(drop=True)
+            
+
+def telegram_bot_sendtext(bot_message : str):
+    bot_message = bot_message.replace("_", "")
+    send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID + '&parse_mode=Markdown&text=' + bot_message
+    response = requests.get(send_text)
+    return response.json()
 
 Watt_Costs_Own = 0.08
 Watt_Costs_All_In = 0.4
@@ -51,7 +68,8 @@ class CoinStatsBase:
         pass
 
     def get_price(self):
-        if self.price is not None and (time.time() - self.last_price_update) < self.price_update:
+        import yfinance as yf
+        if self.price != 0 and (time.time() - self.last_price_update) < self.price_update:
             return
 
         if self.market == "coingecko":
@@ -61,8 +79,8 @@ class CoinStatsBase:
                 df.columns = ["date", "open", "high", "low", "close"]
                 df["date"] = pd.to_datetime(df["date"], unit="ms")
                 df.set_index("date", inplace=True)
-
                 self.price = df["close"].iloc[-1]  # .mean()
+                
             except requests.exceptions.InvalidHeader:
                 print("invalid header")
                 return
@@ -70,21 +88,55 @@ class CoinStatsBase:
             try:
                 #response = request("GET", f'https://api.xeggex.com/api/v2/market/candles?symbol={self.xeggex_ticker}%2FUSDT&from={time.time() - 60 * 60 * 24}&to={time.time()}&resolution=60&countBack=24&firstDataRequest=1')
                 price = 0
-                '''for bar in response.json()["bars"]:
-                    price += bar["close"]
-                price /= len(response.json()["bars"])'''
-                #price = response.json()["bars"][-1]["close"]
-                #print(self.xeggex_ticker)
                 response = request("GET", f"https://api.xeggex.com/api/v2/market/getbysymbol/{self.xeggex_ticker}%2FUSDT")
-                #print(response.json())
                 price = float(response.json()["lastPrice"])
-                self.price = price * 0.93
+                
+                ohlc = self.cg.get_coin_ohlc_by_id(id="tether", vs_currency="eur", days="1")
+                df = pd.DataFrame(ohlc)
+                df.columns = ["date", "open", "high", "low", "close"]
+                df["date"] = pd.to_datetime(df["date"], unit="ms")
+                df.set_index("date", inplace=True)
+                usdt2eur = df["close"].iloc[-1]
+                
+                self.price = price * usdt2eur
+                
+                try:
+                    df = pd.read_csv(f"dataset/USDT.txt")
+                except FileNotFoundError:
+                    with open(f"dataset/USDT.txt", "w") as f:
+                        f.write(f"Time,USDT_Price[EUR]")
+                    df = pd.read_csv(f"dataset/USDT.txt")
+                date_now = datetime.datetime.now().strftime("%d/%m/%Y")
+                if date_now not in list(df["Time"]):
+                    new_row = pd.Series({"Time":date_now, f"USDT_Price[EUR]":usdt2eur})
+                    df = append_row(df, new_row)
+                else:
+                    df[f"USDT_Price[EUR]"][(df["Time"] == date_now)] = usdt2eur
+                df.to_csv(f"dataset/USDT.txt", sep=",", index=False)
 
             except Exception as e:
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
                 print(exc_type, fname, exc_tb.tb_lineno)
+                telegram_bot_sendtext("crashed in coins")
+                telegram_bot_sendtext(f"{exc_type, fname, exc_tb.tb_lineno}")  
                 pass
+            
+        if self.price != 0:
+            self.last_price_update = time.time()
+            try:
+                df = pd.read_csv(f"dataset/{self.name}.txt")
+            except FileNotFoundError:
+                with open(f"dataset/{self.name}.txt", "w") as f:
+                    f.write(f"Time,{self.name}_Price[EUR]")
+                df = pd.read_csv(f"dataset/{self.name}.txt")
+            date_now = datetime.datetime.now().strftime("%d/%m/%Y")
+            if date_now not in list(df["Time"]):
+                new_row = pd.Series({"Time":date_now, f"{self.name}_Price[EUR]":self.price})
+                df = append_row(df, new_row)
+            else:
+                df[f"{self.name}_Price[EUR]"][(df["Time"] == date_now)] = self.price
+            df.to_csv(f"dataset/{self.name}.txt", sep=",", index=False)
 
     def get_profitability(self):
         self.get_difficulty()
@@ -149,7 +201,7 @@ class YDAStats(CoinStatsBase):
         self.driver.get("https://yadacoin.io/explorer")
         #WebDriverWait(self.driver, 5).until(ec.((By.XPATH, "/html/body/main/div/section/div/app-root/app-search-form/h3[3]")))
         for _ in range(15):
-            difficulty = find_text(self.driver.find_element(by=By.XPATH, value="/html/body/main/div/section/div/app-root/app-search-form/h3[3]").text, "Difficulty: ")[0]
+            difficulty = 999999999999999 # find_text(self.driver.find_element(by=By.XPATH, value="/html/body/main/div/section/div/app-root/app-search-form/h3[3]").text, "Difficulty: ")[0]
             if difficulty is not None:
                 self.difficulty = difficulty
                 break
