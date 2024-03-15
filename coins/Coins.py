@@ -90,22 +90,29 @@ class CoinStatsBase:
                 price = 0
                 response = request("GET", f"https://api.xeggex.com/api/v2/market/getbysymbol/{self.xeggex_ticker}%2FUSDT")
                 price = float(response.json()["lastPrice"])
-                usd2eur = yf.download(tickers = 'USDEUR=X', period ='1d', interval = '15m', progress=False)
-                self.price = price * usd2eur["Close"].iloc[-1]
+                
+                ohlc = self.cg.get_coin_ohlc_by_id(id="tether", vs_currency="eur", days="1")
+                df = pd.DataFrame(ohlc)
+                df.columns = ["date", "open", "high", "low", "close"]
+                df["date"] = pd.to_datetime(df["date"], unit="ms")
+                df.set_index("date", inplace=True)
+                usdt2eur = df["close"].iloc[-1]
+                
+                self.price = price * usdt2eur
                 
                 try:
-                    df = pd.read_csv(f"dataset/USD.txt")
+                    df = pd.read_csv(f"dataset/USDT.txt")
                 except FileNotFoundError:
-                    with open(f"dataset/USD.txt", "w") as f:
-                        f.write(f"Time,USD_Price[EUR]")
-                    df = pd.read_csv(f"dataset/USD.txt")
+                    with open(f"dataset/USDT.txt", "w") as f:
+                        f.write(f"Time,USDT_Price[EUR]")
+                    df = pd.read_csv(f"dataset/USDT.txt")
                 date_now = datetime.datetime.now().strftime("%d/%m/%Y")
                 if date_now not in list(df["Time"]):
-                    new_row = pd.Series({"Time":date_now, f"USD_Price[EUR]":usd2eur["Close"].iloc[-1]})
+                    new_row = pd.Series({"Time":date_now, f"USDT_Price[EUR]":usdt2eur})
                     df = append_row(df, new_row)
                 else:
-                    df[f"USD_Price[EUR]"][(df["Time"] == date_now)] = usd2eur["Close"].iloc[-1]
-                df.to_csv(f"dataset/USD.txt", sep=",", index=False)
+                    df[f"USDT_Price[EUR]"][(df["Time"] == date_now)] = usdt2eur
+                df.to_csv(f"dataset/USDT.txt", sep=",", index=False)
 
             except Exception as e:
                 exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -194,7 +201,7 @@ class YDAStats(CoinStatsBase):
         self.driver.get("https://yadacoin.io/explorer")
         #WebDriverWait(self.driver, 5).until(ec.((By.XPATH, "/html/body/main/div/section/div/app-root/app-search-form/h3[3]")))
         for _ in range(15):
-            difficulty = find_text(self.driver.find_element(by=By.XPATH, value="/html/body/main/div/section/div/app-root/app-search-form/h3[3]").text, "Difficulty: ")[0]
+            difficulty = 999999999999999 # find_text(self.driver.find_element(by=By.XPATH, value="/html/body/main/div/section/div/app-root/app-search-form/h3[3]").text, "Difficulty: ")[0]
             if difficulty is not None:
                 self.difficulty = difficulty
                 break
