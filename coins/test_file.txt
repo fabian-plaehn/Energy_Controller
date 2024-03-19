@@ -1,2 +1,0 @@
-Time,Zeph_Price[EUR]
-03/03/2024,20

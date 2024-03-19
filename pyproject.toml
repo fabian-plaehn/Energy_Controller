@@ -1,0 +1,8 @@
+[project]
+name = "energy_controller"
+version = "0.0.1"
+description = "Energy_Controller"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
