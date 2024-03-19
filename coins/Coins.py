@@ -146,7 +146,10 @@ class CoinStatsBase:
             self.price = 0
             blocks_per_second = 0
         else:
-            blocks_per_second = self.hashrate / self.difficulty
+            if self.hashrate == 0 or self.difficulty == 0:
+                block_per_second = 0
+            else:
+                blocks_per_second = self.hashrate / self.difficulty
         rev_per_day = 60 * 60 * 24 * blocks_per_second * self.block_reward * self.price
 
         profit_watt_own = rev_per_day - self.watt * 24 * Watt_Costs_Own  # kW W
@@ -272,6 +275,8 @@ class XDAG_Stats(CoinStatsBase):
             print("fucking site down xdag")
             if self.network_hashrate is None:
                 self.network_hashrate = 2_000_000_000
+        if self.network_hashrate == 0:
+            self.network_hashrate = 999_999_999_999
         self.difficulty = self.network_hashrate * self.block_time
 
 
