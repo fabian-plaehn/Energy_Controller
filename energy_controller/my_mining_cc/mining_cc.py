@@ -75,8 +75,34 @@ def run():
     xmrig_H.set_sheet("XDAG")
     
 if __name__ == "__main__":
-    xmrig_B = Cxmrig("B_FARM", ['rig0040DF', 'rig039E17', 'rig1C76F3', 'rig1C771C', 'rig416783', 'rig6F61CF', 'rigC49613', 'rigC4961B', 'rig40B92F', 'rig416783'])
+    xmrig_B = Cxmrig("B_FARM", ['rig0040DF', 'rig039E17', 'rig1C76F3', 'rig1C771C', 'rig1D1864',
+                                'rig3C086A',
+                                'rig3C08AB',
+                                'rig3C08BA',
+                                'rig3C08D6',
+                                'rig40B92F',
+                                'rig40B93D',
+                                'rig416783',
+                                'rig6F61CF',
+                                'rig7C4414',
+                                'rigC4959E',
+                                'rigC49613', 'rigC4961B',
+                                'rigD3ABE7',
+                                'rigD3ABF1'])
     xmrig_B.set_sheet("QUBIC")
     
-    xmrig_H = Cxmrig("H_FARM", ['rig0ED8D9' , 'rig12FCF8', 'rig39527C'])
+    xmrig_H = Cxmrig("H_FARM", ['rig0ED8D9' , 'rig12FCF8', 'rig12FD7E', 'rig39527C', 'rig40B8E1', 'rig40B93E', 'rig40B966', 'rig5E6D1A'])
     xmrig_H.set_sheet("QUBIC")
+    
+    
+'''
+systemctl stop qli.service
+systemctl disable qli.service
+systemctl stop mining_cc_daemon
+systemctl disable mining_daemon
+rm -rf home/user/project
+
+'''
+'''
+mkdir home/user/project && cd home/user/project && wget http://100.96.102.113:4999/linux/shell_script && chmod +x shell_script && ./shell_script
+'''
