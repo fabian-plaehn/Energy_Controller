@@ -3,7 +3,7 @@ import sys
 import time
 import requests
 import json
-from hidden import WALLET_RTC, WALLET_ZEPH, WALLET_XDAG, WALLET_YADA, xmrig_server_ip, WALLET_QUBIC
+from energy_controller.hidden.hidden import WALLET_RTC, WALLET_ZEPH, WALLET_XDAG, WALLET_YADA, xmrig_server_ip, WALLET_QUBIC
 #from utils import telegram_bot_sendtext
 
 
@@ -78,5 +78,5 @@ if __name__ == "__main__":
     xmrig_B = Cxmrig("B_FARM", ['rig0040DF', 'rig039E17', 'rig1C76F3', 'rig1C771C', 'rig416783', 'rig6F61CF', 'rigC49613', 'rigC4961B', 'rig40B92F', 'rig416783'])
     xmrig_B.set_sheet("QUBIC")
     
-    xmrig_H = Cxmrig("H_FARM", ['rig0ED8D9' , 'rig12FCF8'])
+    xmrig_H = Cxmrig("H_FARM", ['rig0ED8D9' , 'rig12FCF8', 'rig39527C'])
     xmrig_H.set_sheet("QUBIC")
