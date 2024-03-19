@@ -33,56 +33,16 @@ def main():
     
     check_every = 120
     last_check = time.time()-120
-    q_pvpower = deque(maxlen=20)
-    q_csmp = deque(maxlen=20)
-    
-    no_data_counter = 0
-    no_data_max_count = 20
     try:
         while True:
-            CEnergyData = CEnergyController.get_data()
-            if CEnergyData is None:
-                logger("No data available", "info")
-                telegram_bot_sendtext("No data available")
-                no_data_counter += 1
-                time.sleep(1)
-                
-                if no_data_counter >= no_data_max_count:
-                    CEnergyController.reset()
-                    no_data_counter = 0
-                continue
-            no_data_counter = 0
-            q_pvpower.append(CEnergyData.pvpower)
-            q_csmp.append(CEnergyData.csmp)
-            
-            pvpower = mean(list(q_pvpower))
-            csmp = mean(list(q_csmp))
+            usable_power = CEnergyController.get_usable_power()
             
             time.sleep(1)
-            
             if (time.time() - last_check) < check_every:
                 continue
             
             last_check = time.time()
-            logger(f"{CEnergyData}", "info")
-            logger(f"mean_pv_power: {pvpower}, mean_csmp: {csmp}", "info")
-            telegram_bot_sendtext(f"mean_pv_power: {pvpower}, mean_csmp: {csmp}, battery_status: {CEnergyData.batterystatus}, battery_power: {CEnergyData.batterypower}")
-
-            if pvpower > csmp:
-                usable_power = pvpower - csmp
-            elif CEnergyData.batterystatus > 20:  # draw until x percent battery
-                usable_power = 0  # dont add or shutdown rigs
-                if CEnergyData.batterypower > CEnergyData.max_battery_power:  # dont exceed battery power limit else you will pull from grid
-                    usable_power = pvpower - csmp + CEnergyData.max_battery_power  # go down by difference
-                    # TODO
-                    # actually go down more e.g. csmp=25k pv=10k -> battery=4k but go down by so that csmp-pv < 4k
-                elif CEnergyData.batterystatus > 60:  # greater than 60 not exceeding the powerlimit boot up some rigs
-                    usable_power = max(CEnergyData.max_battery_power - CEnergyData.batterypower-500, 0)
-                    
-            else:
-                usable_power = pvpower - csmp  # negative
-
-
+            
             for coin in coins:
                 coin.get_profitability()
                 print(coin.name, coin.revenue, coin.profitability, coin.break_even_watt, coin.price, coin.network_hashrate, coin.difficulty)
@@ -117,8 +77,6 @@ def main():
                     for stack in stacks_to_turn_on:
                         telegram_bot_sendtext(f"Turn on: {stack.name}")
                         stack.turn_on()
-                    
-                
             else:  # turn off rigs
                 # switch from profit to efficiency
                 relevant_stacks = [(stack, stack.watt_efficient, stack.even_watt_rate) for stack in Mining_Stacks if (stack.get_status() and not stack.always_on_stacks)]  # has to be on to be turned off
