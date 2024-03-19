@@ -14,17 +14,17 @@ def main():
     from collections import deque
     import datetime
     import pandas as pd
-    from utils import append_row
+    from energy_controller.utils import append_row
     import os
     import sys
     import time
     from typing import List
-    from utils import Main_Restart_Exception, logger, maximize_with_constraint, minimize_with_constraint, telegram_bot_sendtext
+    from energy_controller.utils import Main_Restart_Exception, logger, maximize_with_constraint, minimize_with_constraint, telegram_bot_sendtext
     from numpy import mean
-    from sunny.CSunny import EnergyController
+    from energy_controller.sunny.CSunny import EnergyController
     telegram_bot_sendtext(f"import mining stacks")
-    from tapo.CTapo import Mining_Stacks, MiningStack
-    from coins.Coins import coins
+    from energy_controller.tapo.CTapo import Mining_Stacks, MiningStack
+    from energy_controller.coins.Coins import coins
     telegram_bot_sendtext(f"imports done")
     
     # init classes

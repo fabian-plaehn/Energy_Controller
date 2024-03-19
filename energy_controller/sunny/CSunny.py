@@ -7,8 +7,8 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
-from hidden.hidden import sunny_username, sunny_password
-from utils import telegram_bot_sendtext, Main_Restart_Exception
+from energy_controller.hidden.hidden import sunny_username, sunny_password
+from energy_controller.utils import telegram_bot_sendtext, Main_Restart_Exception
 
 @dataclass
 class EnergyData:

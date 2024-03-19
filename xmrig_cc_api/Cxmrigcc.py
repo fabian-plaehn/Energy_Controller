@@ -3,8 +3,8 @@ import sys
 import time
 import requests
 import json
-from hidden.hidden import WALLET_RTC, WALLET_ZEPH, WALLET_XDAG, WALLET_YADA, xmrig_server_ip
-from utils import telegram_bot_sendtext
+from energy_controller.hidden.hidden import WALLET_RTC, WALLET_ZEPH, WALLET_XDAG, WALLET_YADA, xmrig_server_ip
+from energy_controller.utils import telegram_bot_sendtext
 
 
 class Sheet:

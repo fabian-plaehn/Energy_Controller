@@ -13,7 +13,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 import pandas as pd
-from hidden.hidden import bot_chatID, bot_token
+from energy_controller.hidden.hidden import bot_chatID, bot_token
 
 
 def append_row(df, row):
@@ -68,7 +68,7 @@ class CoinStatsBase:
         pass
 
     def get_price(self):
-        import yfinance as yf
+
         if self.price != 0 and (time.time() - self.last_price_update) < self.price_update:
             return
 

@@ -2,10 +2,10 @@ import os
 import sys
 import time
 #from PyP100 import PyP100
-from hidden.hidden import tapo_email, tapo_password, tapo_ip_1, HIVE_API_KEY, FARM_NAME_B, FARM_NAME_H
-from coins.Coins import coins
-from HiveOS.HiveOS import Hive
-from utils import logger, telegram_bot_sendtext
+from energy_controller.hidden.hidden import tapo_email, tapo_password, tapo_ip_1, HIVE_API_KEY, FARM_NAME_B, FARM_NAME_H
+from energy_controller.coins.Coins import coins
+from energy_controller.HiveOS.HiveOS import Hive
+from energy_controller.utils import logger, telegram_bot_sendtext
 from xmrig_cc_api.Cxmrigcc import Cxmrig
 
 class Always_On_P100:
@@ -24,8 +24,6 @@ class Always_On_P100:
 
 import logging
 from base64 import b64decode
-
-from PyP100 import MeasureInterval
 
 from .auth_protocol import AuthProtocol, OldProtocol
 
@@ -125,27 +123,6 @@ class Switchable(Device):
     def turnOffWithDelay(self, delay):
         return self.switch_with_delay(False, delay)
 
-
-class Metering(Device):
-    def getEnergyUsage(self) -> dict:
-        return self.request("get_energy_usage")
-
-    def getEnergyData(self, start_timestamp: int, end_timestamp: int, interval: MeasureInterval) -> dict:
-        """Hours are always ignored, start is rounded to midnight, first day of month or first of January based on interval"""
-        return self.request("get_energy_data", {"start_timestamp": start_timestamp, "end_timestamp": end_timestamp, "interval": interval.value})
-
-
-class Color(Device):
-    def setBrightness(self, brightness: int):
-        return self._set_device_info({"brightness": brightness})
-
-    def setColorTemp(self, color_temp: int):
-        return self._set_device_info({"color_temp": color_temp})
-
-    def setColor(self, hue, saturation):
-        return self._set_device_info(
-            {"color_temp": 0, "hue": hue, "saturation": saturation}
-        )
 
 
 class P100(Switchable):

@@ -1,6 +1,6 @@
 from multiprocessing import Process
 import time
-from utils import telegram_bot_sendtext, kill_ff
+from energy_controller.utils import telegram_bot_sendtext, kill_ff
 from main import main
 
 

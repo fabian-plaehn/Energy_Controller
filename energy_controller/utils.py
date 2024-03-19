@@ -9,7 +9,7 @@ import pandas as pd
 import psutil
 import numpy as np
 import requests
-from hidden.hidden import bot_token, bot_chatID
+from energy_controller.hidden.hidden import bot_token, bot_chatID
 _debug = False
 _info = True
 _trace = False
