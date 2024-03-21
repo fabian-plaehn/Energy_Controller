@@ -41,8 +41,9 @@ def get_YADA_JSON(**kargs):
 def get_QUBIC_JSON(**kargs):
     FARM_NAME = kargs["farm_name"]
     rig_id = kargs["rig_id"]
-    return {"miner_name":"QUBIC", "config":{"Settings":{"amountOfThreads": 16, 
+    return {"miner_name":"QUBIC", "config":{"Settings":{"amountOfThreads": 22, 
                                                         "baseUrl":"https://ai.diyschool.ch/", 
+                                                        "allowHwInfoCollect": True,
                                                         "accessToken":WALLET_QUBIC[FARM_NAME],
                                                         "alias":str(rig_id)}}}
     
@@ -91,8 +92,11 @@ if __name__ == "__main__":
                                 'rigD3ABF1'])
     xmrig_B.set_sheet("QUBIC")
     
-    xmrig_H = Cxmrig("H_FARM", ['rig0ED8D9' , 'rig12FCF8', 'rig12FD7E', 'rig39527C', 'rig40B8E1', 'rig40B93E', 'rig40B966', 'rig5E6D1A'])
+    xmrig_H = Cxmrig("B_FARM", ['rig0ED8D9' , 'rig12FCF8', 'rig12FD7E', 'rig39527C', 'rig40B8E1', 'rig40B93E', 'rig40B966', 'rig5E6D1A'])
     xmrig_H.set_sheet("QUBIC")
+    
+    '''xmrig_H = Cxmrig("H_FARM", ['DESKTOP-LIJOB68'])
+    xmrig_H.set_sheet("QUBIC") '''
     
     
 '''
