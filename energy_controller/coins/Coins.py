@@ -4,6 +4,7 @@ import os
 import sys
 import time
 import urllib.request
+import numpy as np
 import pandas as pd
 from pycoingecko import CoinGeckoAPI
 import requests
@@ -68,18 +69,19 @@ class CoinStatsBase:
         pass
 
     def get_price(self):
-        if self.price != 0 and (time.time() - self.last_price_update) < self.price_update:
+        if self.price != 0 and ((time.time() - self.last_price_update) < self.price_update):
             return
 
         if self.market == "coingecko":
             try:
-                ohlc = self.cg.get_coin_ohlc_by_id(id=self.cg_id, vs_currency="eur", days="1")
+                '''ohlc = self.cg.get_coin_ohlc_by_id(id=self.cg_id, vs_currency="eur", days="1")
                 df = pd.DataFrame(ohlc)
                 df.columns = ["date", "open", "high", "low", "close"]
                 df["date"] = pd.to_datetime(df["date"], unit="ms")
                 df.set_index("date", inplace=True)
-                self.price = df["close"].iloc[-1]  # .mean()
-                
+                self.price = df["close"].iloc[-1]  # .mean()'''
+                self.price = self.cg.get_price(ids=self.cg_id, vs_currencies="eur")[self.cg_id]["eur"]
+                print(self.name, self.price)
             except requests.exceptions.InvalidHeader:
                 print("invalid header")
                 return
@@ -87,18 +89,13 @@ class CoinStatsBase:
             try:
                 #response = request("GET", f'https://api.xeggex.com/api/v2/market/candles?symbol={self.xeggex_ticker}%2FUSDT&from={time.time() - 60 * 60 * 24}&to={time.time()}&resolution=60&countBack=24&firstDataRequest=1')
                 price = 0
+                print("XEGGEX", self.xeggex_ticker)
                 response = request("GET", f"https://api.xeggex.com/api/v2/market/getbysymbol/{self.xeggex_ticker}%2FUSDT")
                 price = float(response.json()["lastPrice"])
-                
-                ohlc = self.cg.get_coin_ohlc_by_id(id="tether", vs_currency="eur", days="1")
-                df = pd.DataFrame(ohlc)
-                df.columns = ["date", "open", "high", "low", "close"]
-                df["date"] = pd.to_datetime(df["date"], unit="ms")
-                df.set_index("date", inplace=True)
-                usdt2eur = df["close"].iloc[-1]
-                
+                print("XEGGEX", self.name, price)
+                usdt2eur = self.cg.get_price(ids="tether", vs_currencies="eur")["tether"]["eur"]
                 self.price = price * usdt2eur
-                
+                print("XEGGEX", self.name, self.price)
                 try:
                     df = pd.read_csv(f"dataset/USDT.txt")
                 except FileNotFoundError:
@@ -110,7 +107,8 @@ class CoinStatsBase:
                     new_row = pd.Series({"Time":date_now, f"USDT_Price[EUR]":usdt2eur})
                     df = append_row(df, new_row)
                 else:
-                    df[f"USDT_Price[EUR]"][(df["Time"] == date_now)] = usdt2eur
+                    #df[f"USDT_Price[EUR]"][(df["Time"] == date_now)] = usdt2eur
+                    df.loc[np.argwhere(df["Time"] == date_now)[0,0], f"USDT_Price[EUR]"] = usdt2eur
                 df.to_csv(f"dataset/USDT.txt", sep=",", index=False)
 
             except Exception as e:
@@ -134,13 +132,15 @@ class CoinStatsBase:
                 new_row = pd.Series({"Time":date_now, f"{self.name}_Price[EUR]":self.price})
                 df = append_row(df, new_row)
             else:
-                df[f"{self.name}_Price[EUR]"][(df["Time"] == date_now)] = self.price
+                df.loc[np.argwhere(df["Time"] == date_now)[0,0], f"{self.name}_Price[EUR]"] = self.price
             df.to_csv(f"dataset/{self.name}.txt", sep=",", index=False)
 
     def get_profitability(self):
         self.get_difficulty()
         self.get_price()
 
+        print("get profit for :", self.name)
+        print(self.price, self.difficulty)
         if self.price is None or self.difficulty is None:
             self.price = 0
             blocks_per_second = 0
@@ -188,7 +188,7 @@ class YDAStats(CoinStatsBase):
             'Accept-Language': 'en-US,en;q=0.8',
             'Connection': 'keep-alive'}
         self.difficulty = None
-        self.price = None
+        self.price = 0
         self.block_reward = 11.25
         self.hashrate = 12000
         self.watt = 0.120
@@ -201,16 +201,14 @@ class YDAStats(CoinStatsBase):
 
     def get_difficulty(self):
         self.driver.get("https://yadacoin.io/explorer")
-        #WebDriverWait(self.driver, 5).until(ec.((By.XPATH, "/html/body/main/div/section/div/app-root/app-search-form/h3[3]")))
+        WebDriverWait(self.driver, 5).until(ec.presence_of_element_located((By.XPATH, "/html/body/main/div/section/div/app-root/app-search-form/h3[3]")))
         for _ in range(15):
-            difficulty = 999999999999999 # find_text(self.driver.find_element(by=By.XPATH, value="/html/body/main/div/section/div/app-root/app-search-form/h3[3]").text, "Difficulty: ")[0]
+            difficulty = find_text(self.driver.find_element(by=By.XPATH, value="/html/body/main/div/section/div/app-root/app-search-form/h3[3]").text, "Difficulty: ")[0]
             if difficulty is not None:
                 self.difficulty = difficulty
                 break
             time.sleep(3)
         
-
-
 
 class AVN_Stats(CoinStatsBase):
     def __init__(self):
@@ -223,7 +221,7 @@ class AVN_Stats(CoinStatsBase):
             'Accept-Language': 'en-US,en;q=0.8',
             'Connection': 'keep-alive'}
         self.difficulty = None
-        self.price = None
+        self.price = 0
         self.block_reward = 1187.50
         self.block_time = 30
         self.hashrate = 13000
@@ -256,7 +254,7 @@ class XDAG_Stats(CoinStatsBase):
             'Accept-Language': 'en-US,en;q=0.8',
             'Connection': 'keep-alive'}
         self.difficulty = None
-        self.price = None
+        self.price = 0
         self.block_reward = 64
         self.block_time = 64
         self.hashrate = 12000
@@ -280,8 +278,9 @@ class XDAG_Stats(CoinStatsBase):
 
 
 class QUBIC_Stats(CoinStatsBase):
-    def __ini__(self):
+    def __init__(self):
         super(QUBIC_Stats, self).__init__()
+        
         self.name = "QUBIC"
         self.cg_id = "qubic-network"
         self.market = "coingecko"
@@ -291,10 +290,7 @@ class QUBIC_Stats(CoinStatsBase):
         self.hashrate = 55
         self.watt = 0.12
         import math
-        self.network_hashrate = math.inf()
-        
-        #blocks_per_second = self.hashrate / self.difficulty
-        #rev_per_day = 60 * 60 * 24 * blocks_per_second * self.block_reward * self.price
+        self.network_hashrate = math.inf
         
     def get_difficulty(self):
         rBody = {'userName': 'guest@qubic.li', 'password': 'guest13@Qubic.li', 'twoFactorCode': ''}
@@ -308,60 +304,6 @@ class QUBIC_Stats(CoinStatsBase):
         self.network_hashrate = networkStat['estimatedIts']
 
         self.difficulty = self.network_hashrate * self.block_time
-        pass
-    
-        
-'''
-from math import exp
-#enter you total hashrate of your rigs here (in it/s)
-myHashrate = 102
-
-#doing the math
-import sys
-import requests
-import json
-from datetime import datetime, timedelta
-from pycoingecko import CoinGeckoAPI
-
-rBody = {'userName': 'guest@qubic.li', 'password': 'guest13@Qubic.li', 'twoFactorCode': ''}
-rHeaders = {'Accept': 'application/json', 'Content-Type': 'application/json-patch+json'}
-r = requests.post('https://api.qubic.li/Auth/Login', data=json.dumps(rBody), headers=rHeaders)
-token = r.json()['token']
-rHeaders = {'Accept': 'application/json', 'Authorization': 'Bearer ' + token}
-r = requests.get('https://api.qubic.li/Score/Get', headers=rHeaders)
-networkStat = r.json()
-
-epochNumber = networkStat['scoreStatistics'][0]['epoch']
-epoch97Begin = date_time_obj = datetime.strptime('2024-02-21 12:00:00', '%Y-%m-%d %H:%M:%S')
-curEpochBegin = epoch97Begin + timedelta(days=7 * (epochNumber - 97))
-curEpochEnd = curEpochBegin + timedelta(days=7) - timedelta(seconds=1)
-curEpochProgress = (datetime.utcnow() - curEpochBegin) / timedelta(days=7)
-
-netHashrate = networkStat['estimatedIts']
-netAvgScores = networkStat['averageScore']
-netSolsPerHour = networkStat['solutionsPerHour']
-
-crypto_currency = 'qubic-network'
-destination_currency = 'usd'
-cg_client = CoinGeckoAPI()
-prices = cg_client.get_price(ids=crypto_currency, vs_currencies=destination_currency)
-qubicPrice = prices[crypto_currency][destination_currency]
-poolReward = 0.85
-incomerPerOneITS = poolReward * qubicPrice * 1000000000000 / netHashrate / 7 / 1.06
-curSolPrice = 1479289940 * poolReward * curEpochProgress * qubicPrice / (netAvgScores * 1.06)
-
-sols_per_day_average = 24 * myHashrate * netSolsPerHour / netHashrate
-
-# Parameters for the Poisson distribution
-lambda_per_day = sols_per_day_average
-days_in_week = 7
-# Calculate the average rate of occurrence over a week
-lambda_week = lambda_per_day * days_in_week
-# Probability of observing 0 events in a week
-P_0 = exp(-lambda_week)
-P_0_day = exp(-lambda_per_day)
-P_0_3days = exp(-lambda_per_day*3)
-'''
 
 class ZEPH_Stats(CoinStatsBase):
     def __init__(self):
@@ -374,7 +316,7 @@ class ZEPH_Stats(CoinStatsBase):
             'Accept-Language': 'en-US,en;q=0.8',
             'Connection': 'keep-alive'}
         self.difficulty = None
-        self.price = None
+        self.price = 0
         self.block_reward = 10.7
         self.block_time = 120
         self.hashrate = 12000
@@ -403,7 +345,7 @@ class RTC_Stats(CoinStatsBase):
         super(RTC_Stats, self).__init__()
 
         self.difficulty = None
-        self.price = None
+        self.price = 0
 
         self.block_reward = 3750
         self.hashrate = 3200
@@ -457,16 +399,17 @@ qubic = QUBIC_Stats()
 coins = [rtc, xdag, zeph, yada]
 
 if __name__ == "__main__":
-    hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
+    '''hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
            'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3',
            'Accept-Encoding': 'none',
            'Accept-Language': 'en-US,en;q=0.8',
            'Connection': 'keep-alive'}
-    req = urllib.request.Request("https://explorer.vishcoin.com/api/getnetworkhashps", headers=hdr)
+    req = urllib.request.Request("https://explorer.vishcoin.com/api/getnetworkhashps", headers=hdr)'''
     # with urllib.request.urlopen(req) as url:
     #    string = json.load(url)
     # print(string)
+    
     coins = [rtc, xdag, zeph, yada, qubic]
 
     for coin in coins:
