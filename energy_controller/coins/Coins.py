@@ -68,7 +68,6 @@ class CoinStatsBase:
         pass
 
     def get_price(self):
-
         if self.price != 0 and (time.time() - self.last_price_update) < self.price_update:
             return
 
@@ -280,6 +279,90 @@ class XDAG_Stats(CoinStatsBase):
         self.difficulty = self.network_hashrate * self.block_time
 
 
+class QUBIC_Stats(CoinStatsBase):
+    def __ini__(self):
+        super(QUBIC_Stats, self).__init__()
+        self.name = "QUBIC"
+        self.cg_id = "qubic-network"
+        self.market = "coingecko"
+        
+        self.block_reward = 1000000000000
+        self.block_time = 60*60*24*7  # one block per week
+        self.hashrate = 55
+        self.watt = 0.12
+        import math
+        self.network_hashrate = math.inf()
+        
+        #blocks_per_second = self.hashrate / self.difficulty
+        #rev_per_day = 60 * 60 * 24 * blocks_per_second * self.block_reward * self.price
+        
+    def get_difficulty(self):
+        rBody = {'userName': 'guest@qubic.li', 'password': 'guest13@Qubic.li', 'twoFactorCode': ''}
+        rHeaders = {'Accept': 'application/json', 'Content-Type': 'application/json-patch+json'}
+        r = requests.post('https://api.qubic.li/Auth/Login', data=json.dumps(rBody), headers=rHeaders)
+        token = r.json()['token']
+        rHeaders = {'Accept': 'application/json', 'Authorization': 'Bearer ' + token}
+        r = requests.get('https://api.qubic.li/Score/Get', headers=rHeaders)
+        networkStat = r.json()
+        
+        self.network_hashrate = networkStat['estimatedIts']
+
+        self.difficulty = self.network_hashrate * self.block_time
+        pass
+    
+        
+'''
+from math import exp
+#enter you total hashrate of your rigs here (in it/s)
+myHashrate = 102
+
+#doing the math
+import sys
+import requests
+import json
+from datetime import datetime, timedelta
+from pycoingecko import CoinGeckoAPI
+
+rBody = {'userName': 'guest@qubic.li', 'password': 'guest13@Qubic.li', 'twoFactorCode': ''}
+rHeaders = {'Accept': 'application/json', 'Content-Type': 'application/json-patch+json'}
+r = requests.post('https://api.qubic.li/Auth/Login', data=json.dumps(rBody), headers=rHeaders)
+token = r.json()['token']
+rHeaders = {'Accept': 'application/json', 'Authorization': 'Bearer ' + token}
+r = requests.get('https://api.qubic.li/Score/Get', headers=rHeaders)
+networkStat = r.json()
+
+epochNumber = networkStat['scoreStatistics'][0]['epoch']
+epoch97Begin = date_time_obj = datetime.strptime('2024-02-21 12:00:00', '%Y-%m-%d %H:%M:%S')
+curEpochBegin = epoch97Begin + timedelta(days=7 * (epochNumber - 97))
+curEpochEnd = curEpochBegin + timedelta(days=7) - timedelta(seconds=1)
+curEpochProgress = (datetime.utcnow() - curEpochBegin) / timedelta(days=7)
+
+netHashrate = networkStat['estimatedIts']
+netAvgScores = networkStat['averageScore']
+netSolsPerHour = networkStat['solutionsPerHour']
+
+crypto_currency = 'qubic-network'
+destination_currency = 'usd'
+cg_client = CoinGeckoAPI()
+prices = cg_client.get_price(ids=crypto_currency, vs_currencies=destination_currency)
+qubicPrice = prices[crypto_currency][destination_currency]
+poolReward = 0.85
+incomerPerOneITS = poolReward * qubicPrice * 1000000000000 / netHashrate / 7 / 1.06
+curSolPrice = 1479289940 * poolReward * curEpochProgress * qubicPrice / (netAvgScores * 1.06)
+
+sols_per_day_average = 24 * myHashrate * netSolsPerHour / netHashrate
+
+# Parameters for the Poisson distribution
+lambda_per_day = sols_per_day_average
+days_in_week = 7
+# Calculate the average rate of occurrence over a week
+lambda_week = lambda_per_day * days_in_week
+# Probability of observing 0 events in a week
+P_0 = exp(-lambda_week)
+P_0_day = exp(-lambda_per_day)
+P_0_3days = exp(-lambda_per_day*3)
+'''
+
 class ZEPH_Stats(CoinStatsBase):
     def __init__(self):
         super(ZEPH_Stats, self).__init__()
@@ -369,6 +452,7 @@ zeph = ZEPH_Stats()
 avn = AVN_Stats()
 yada = YDAStats()
 vishai = VishAIStats()
+qubic = QUBIC_Stats()
 
 coins = [rtc, xdag, zeph, yada]
 
@@ -383,7 +467,7 @@ if __name__ == "__main__":
     # with urllib.request.urlopen(req) as url:
     #    string = json.load(url)
     # print(string)
-    coins = [rtc, xdag, zeph, yada]
+    coins = [rtc, xdag, zeph, yada, qubic]
 
     for coin in coins:
         coin.get_profitability()

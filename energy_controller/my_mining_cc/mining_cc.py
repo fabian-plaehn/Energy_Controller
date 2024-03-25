@@ -14,7 +14,8 @@ def get_RTC_JSON(**kargs):
             "config":{"pools":[{"algo":"ghostrider", 
                                 "url":"stratum-eu.rplant.xyz:7054", 
                                 "user":WALLET_RTC[FARM_NAME]+"."+str(rig_id)}],
-                      "http": {"enabled": True, "host": "127.0.0.1", "port": 58001}
+                      "http": {"enabled": True, "host": "127.0.0.1", "port": 58001},
+                      "randomx": {"random1gb-pages": True}
                       }
             }
 
@@ -28,7 +29,8 @@ def get_ZEPH_JSON(**kargs):
                                 "pass":str(rig_id)
                                 }
                                ],
-                      "http": {"enabled": True, "host": "127.0.0.1", "port": 58002}
+                      "http": {"enabled": True, "host": "127.0.0.1", "port": 58002},
+                      "randomx": {"random1gb-pages": True}
                       }
             }
 
@@ -40,7 +42,8 @@ def get_XDAG_JSON(**kargs):
                                 "url":"stratum.xdag.org:23655", 
                                 "user":WALLET_XDAG[FARM_NAME],
                                 "pass":str(rig_id)}],
-                      "http": {"enabled": True, "host": "127.0.0.1", "port": 58003}
+                      "http": {"enabled": True, "host": "127.0.0.1", "port": 58003},
+                      "randomx": {"random1gb-pages": True}
                       }
             }
     
@@ -52,7 +55,8 @@ def get_YADA_JSON(**kargs):
                                 "url":"yada.steadnet.net:3333", 
                                 "user":WALLET_YADA[FARM_NAME],
                                 "pass":str(rig_id)}],
-                      "http": {"enabled": True, "host": "127.0.0.1", "port": 58004}
+                      "http": {"enabled": True, "host": "127.0.0.1", "port": 58004},
+                      "randomx": {"random1gb-pages": True}
                       }
             }
     
@@ -60,7 +64,8 @@ def get_QUBIC_JSON(**kargs):
     FARM_NAME = kargs["farm_name"]
     rig_id = kargs["rig_id"]
     return {"miner_name":"QUBIC", "config":{"Settings":{"amountOfThreads": 22, 
-                                                        "baseUrl":"https://ai.diyschool.ch/", 
+                                                        "baseUrl":"https://mine.qubic.li/",
+                                                        #"baseUrl":"https://ai.diyschool.ch/", 
                                                         "allowHwInfoCollect": True,
                                                         "autoupdateEnabled": True,
                                                         "accessToken":WALLET_QUBIC[FARM_NAME],
@@ -112,13 +117,13 @@ if __name__ == "__main__":
                                 'rigC49613', 'rigC4961B',
                                 'rigD3ABE7',
                                 'rigD3ABF1'])
-    xmrig_B.set_sheet("ZEPH")
+    xmrig_B.set_sheet("QUBIC")
     
     xmrig_H = Cxmrig("H_FARM", ['rig0ED8D9' , 'rig12FCF8', 'rig12FD7E', 'rig39527C', 'rig40B8E1', 'rig40B93E', 'rig40B966', 'rig5E6D1A'])
-    xmrig_H.set_sheet("ZEPH")
+    xmrig_H.set_sheet("QUBIC")
     
     xmrig_H = Cxmrig("H_FARM", ['DESKTOP-LIJOB68'])
-    xmrig_H.set_sheet("ZEPH")
+    xmrig_H.set_sheet("QUBIC")
     
     
 '''
