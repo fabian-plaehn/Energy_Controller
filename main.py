@@ -49,7 +49,7 @@ def main():
                 telegram_bot_sendtext(f"{coin.name, coin.profitability, coin.break_even_watt}")
 
             for stack in Mining_Stacks:
-                stack.update_coin()
+                stack.update_coin([coin for coin in coins if coin.minable])
 
             logger("Usable Power: " + str(usable_power), "info")
             telegram_bot_sendtext("Usable Power: " + str(usable_power))

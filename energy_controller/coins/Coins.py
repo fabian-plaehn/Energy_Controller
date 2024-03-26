@@ -3,6 +3,7 @@ import json
 import os
 import sys
 import time
+from typing import List
 import urllib.request
 import numpy as np
 import pandas as pd
@@ -15,20 +16,8 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 import pandas as pd
 from energy_controller.hidden.hidden import bot_chatID, bot_token
-
-
-def append_row(df, row):
-    return pd.concat([
-                df, 
-                pd.DataFrame([row], columns=row.index)]
-           ).reset_index(drop=True)
-            
-
-def telegram_bot_sendtext(bot_message : str):
-    bot_message = bot_message.replace("_", "")
-    send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID + '&parse_mode=Markdown&text=' + bot_message
-    response = requests.get(send_text)
-    return response.json()
+import math
+from energy_controller.utils import logger, telegram_bot_sendtext, append_row
 
 Watt_Costs_Own = 0.08
 Watt_Costs_All_In = 0.4
@@ -45,6 +34,7 @@ class CoinStatsBase:
         self.last_price_update = time.time()
         self.price_update = 2 * 60 * 60
         self.block_reward = 12.5
+        self.minable = False
         self.hashrate = 11500
         self.watt = 0.115
         self.profitability = 0
@@ -74,14 +64,7 @@ class CoinStatsBase:
 
         if self.market == "coingecko":
             try:
-                '''ohlc = self.cg.get_coin_ohlc_by_id(id=self.cg_id, vs_currency="eur", days="1")
-                df = pd.DataFrame(ohlc)
-                df.columns = ["date", "open", "high", "low", "close"]
-                df["date"] = pd.to_datetime(df["date"], unit="ms")
-                df.set_index("date", inplace=True)
-                self.price = df["close"].iloc[-1]  # .mean()'''
                 self.price = self.cg.get_price(ids=self.cg_id, vs_currencies="eur")[self.cg_id]["eur"]
-                print(self.name, self.price)
             except requests.exceptions.InvalidHeader:
                 print("invalid header")
                 return
@@ -89,15 +72,11 @@ class CoinStatsBase:
             try:
                 #response = request("GET", f'https://api.xeggex.com/api/v2/market/candles?symbol={self.xeggex_ticker}%2FUSDT&from={time.time() - 60 * 60 * 24}&to={time.time()}&resolution=60&countBack=24&firstDataRequest=1')
                 price = 0
-                print("XEGGEX", self.xeggex_ticker)
                 response = request("GET", f"https://api.xeggex.com/api/v2/market/getbysymbol/{self.xeggex_ticker}%2FUSDT")
                 price = float(response.json()["lastPrice"])
-                print("XEGGEX", self.name, price)
                 usdt2eur = self.cg.get_price(ids="tether", vs_currencies="eur")["tether"]["eur"]
                 self.price = price * usdt2eur
-                print("XEGGEX", self.name, self.price)
-                try:
-                    df = pd.read_csv(f"dataset/USDT.txt")
+                try: df = pd.read_csv(f"dataset/USDT.txt")
                 except FileNotFoundError:
                     with open(f"dataset/USDT.txt", "w") as f:
                         f.write(f"Time,USDT_Price[EUR]")
@@ -121,8 +100,7 @@ class CoinStatsBase:
             
         if self.price != 0:
             self.last_price_update = time.time()
-            try:
-                df = pd.read_csv(f"dataset/{self.name}.txt")
+            try: df = pd.read_csv(f"dataset/{self.name}.txt")
             except FileNotFoundError:
                 with open(f"dataset/{self.name}.txt", "w") as f:
                     f.write(f"Time,{self.name}_Price[EUR]")
@@ -136,19 +114,17 @@ class CoinStatsBase:
             df.to_csv(f"dataset/{self.name}.txt", sep=",", index=False)
 
     def get_profitability(self):
+        print("get profit for :", self.name)
+        
         self.get_difficulty()
         self.get_price()
 
-        print("get profit for :", self.name)
-        print(self.price, self.difficulty)
-        if self.price is None or self.difficulty is None:
+        
+        if self.price is None or self.difficulty is None or self.hashrate == 0 or self.difficulty == 0:
             self.price = 0
             blocks_per_second = 0
         else:
-            if self.hashrate == 0 or self.difficulty == 0:
-                block_per_second = 0
-            else:
-                blocks_per_second = self.hashrate / self.difficulty
+            blocks_per_second = self.hashrate / self.difficulty
         rev_per_day = 60 * 60 * 24 * blocks_per_second * self.block_reward * self.price
 
         profit_watt_own = rev_per_day - self.watt * 24 * Watt_Costs_Own  # kW W
@@ -270,10 +246,6 @@ class XDAG_Stats(CoinStatsBase):
                 self.network_hashrate = data["stats"]['hashrate'][1]
         except:
             print("fucking site down xdag")
-            if self.network_hashrate is None:
-                self.network_hashrate = 2_000_000_000
-        if self.network_hashrate == 0:
-            self.network_hashrate = 999_999_999_999
         self.difficulty = self.network_hashrate * self.block_time
 
 
@@ -293,17 +265,20 @@ class QUBIC_Stats(CoinStatsBase):
         self.network_hashrate = math.inf
         
     def get_difficulty(self):
-        rBody = {'userName': 'guest@qubic.li', 'password': 'guest13@Qubic.li', 'twoFactorCode': ''}
-        rHeaders = {'Accept': 'application/json', 'Content-Type': 'application/json-patch+json'}
-        r = requests.post('https://api.qubic.li/Auth/Login', data=json.dumps(rBody), headers=rHeaders)
-        token = r.json()['token']
-        rHeaders = {'Accept': 'application/json', 'Authorization': 'Bearer ' + token}
-        r = requests.get('https://api.qubic.li/Score/Get', headers=rHeaders)
-        networkStat = r.json()
-        
-        self.network_hashrate = networkStat['estimatedIts']
+        try:
+            rBody = {'userName': 'guest@qubic.li', 'password': 'guest13@Qubic.li', 'twoFactorCode': ''}
+            rHeaders = {'Accept': 'application/json', 'Content-Type': 'application/json-patch+json'}
+            r = requests.post('https://api.qubic.li/Auth/Login', data=json.dumps(rBody), headers=rHeaders)
+            token = r.json()['token']
+            rHeaders = {'Accept': 'application/json', 'Authorization': 'Bearer ' + token}
+            r = requests.get('https://api.qubic.li/Score/Get', headers=rHeaders)
+            networkStat = r.json()
+            
+            self.network_hashrate = networkStat['estimatedIts']
 
-        self.difficulty = self.network_hashrate * self.block_time
+            self.difficulty = self.network_hashrate * self.block_time
+        except:
+            print("SITE DOWN ", self.name)
 
 class ZEPH_Stats(CoinStatsBase):
     def __init__(self):
@@ -396,7 +371,13 @@ yada = YDAStats()
 vishai = VishAIStats()
 qubic = QUBIC_Stats()
 
-coins = [rtc, xdag, zeph, yada]
+rtc.minable = True
+xdag.minable = True
+zeph.minable = True
+qubic.minable = True
+yada.minable = False
+
+coins:List[CoinStatsBase] = [rtc, xdag, zeph, yada, qubic]
 
 if __name__ == "__main__":
     '''hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',

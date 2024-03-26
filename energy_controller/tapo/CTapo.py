@@ -3,10 +3,8 @@ import sys
 import time
 #from PyP100 import PyP100
 from energy_controller.hidden.hidden import tapo_email, tapo_password, tapo_ip_1, HIVE_API_KEY, FARM_NAME_B, FARM_NAME_H
-from energy_controller.coins.Coins import coins
-from energy_controller.HiveOS.HiveOS import Hive
 from energy_controller.utils import logger, telegram_bot_sendtext
-from xmrig_cc_api.Cxmrigcc import Cxmrig
+from energy_controller.my_mining_cc.mining_cc import Cxmrig
 
 class Always_On_P100:
     def turn_on(self):
@@ -173,7 +171,7 @@ class MiningStack:
         self.p100.turnOff()
         self.time_turn_off = time.time()
 
-    def update_coin(self):
+    def update_coin(self, coins):
         coins.sort(key=lambda x: x.profitability, reverse=True)
         self.profit_coin = coins[0].name
         self.revenue_profit = coins[0].revenue * self.number_pcs
@@ -240,14 +238,5 @@ Mining_Stack_05 = MiningStack(8, ip="192.168.0.100", CHive=Cxmrig("H_FARM", ["ri
 
 
 Mining_Stacks = [Mining_Stack_01, Mining_Stack_02, Mining_Stack_03, Mining_Stack_04, Mining_Stack_05]
-
-for coin in coins:
-    coin.get_profitability()
-    print(coin.name, coin.revenue, coin.profitability, coin.break_even_watt, coin.price, coin.network_hashrate, coin.difficulty)
-
-
-for stack in Mining_Stacks:
-    stack.update_coin()
-    print(stack.name, stack.watt, stack.watt_efficient)
 
 
