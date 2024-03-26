@@ -1,10 +1,12 @@
 import os
 import sys
 import time
+from typing import List
 #from PyP100 import PyP100
 from energy_controller.hidden.hidden import tapo_email, tapo_password, tapo_ip_1, HIVE_API_KEY, FARM_NAME_B, FARM_NAME_H
 from energy_controller.utils import logger, telegram_bot_sendtext
 from energy_controller.my_mining_cc.mining_cc import Cxmrig
+from energy_controller.coins.Coins import CoinStatsBase
 
 class Always_On_P100:
     def turn_on(self):
@@ -140,15 +142,16 @@ class MiningStack:
         self.number_pcs = number_pcs
         self.time_turn_on = time.time()
         self.time_turn_off = time.time()
-        self.watt = 0
-        self.profit = 0
+        self.profit_watt = 0
+        self.profit_profit = 0
         self.even_watt_rate = 0
-        self.watt_efficient = 0
+        self.efficient_watt = 0
         self.efficient_watt_difference = 0
         self.efficient_sheet = efficient_sheet
         self.profit_coin = None
         self.efficient_coin = None
         self.CHive = CHive
+        self.profit_on = False
         
         #self.all_fs = self.CHive.get_all_fs()
         self.last_fs = 0
@@ -171,20 +174,22 @@ class MiningStack:
         self.p100.turnOff()
         self.time_turn_off = time.time()
 
-    def update_coin(self, coins):
+    def update_coin(self, coins:List[CoinStatsBase]):
         coins.sort(key=lambda x: x.profitability, reverse=True)
         self.profit_coin = coins[0].name
-        self.revenue_profit = coins[0].revenue * self.number_pcs
-        self.profit = coins[0].profitability * self.number_pcs
-        self.watt = coins[0].watt * self.number_pcs * 1000
+        self.profit_revenue = coins[0].revenue * self.number_pcs
+        self.profit_profit = coins[0].profitability * self.number_pcs
+        self.profit_watt = coins[0].watt * self.number_pcs * 1000
+        self.profit_eur_per_kwh = coins[0].break_even_watt
 
         coins.sort(key=lambda x: x.break_even_watt, reverse=True)
         self.efficient_coin = coins[0].name
-        self.revenue_efficient = coins[0].revenue * self.number_pcs
-        self.watt_efficient = coins[0].watt * self.number_pcs * 1000
-        self.even_watt_rate = coins[0].break_even_watt * self.number_pcs
+        self.efficient_revenue = coins[0].revenue * self.number_pcs
+        self.efficient_profit = coins[0].profitability * self.number_pcs
+        self.efficient_watt = coins[0].watt * self.number_pcs * 1000
+        self.efficient_eur_per_kwh = coins[0].break_even_watt
 
-        self.efficient_watt_difference = self.watt - self.watt_efficient
+        self.efficient_watt_difference = self.profit_watt - self.efficient_watt
 
     def get_status(self):
         return self.p100.get_status()
@@ -195,15 +200,15 @@ class MiningStack:
             if (self.efficient_sheet or self.always_efficient) and not self.always_profit:
                 self.CHive.set_sheet(self.efficient_coin)
                 self.current_coin = self.efficient_coin
-                self.current_watt = self.watt_efficient
-                self.current_revenue = self.revenue_efficient
+                self.current_watt = self.efficient_watt
+                self.current_revenue = self.efficient_revenue
                 logger(f"Set efficient flightsheet {self.efficient_coin}", "info")
                 telegram_bot_sendtext(f"Set efficient flightsheet {self.efficient_coin}")
             else:
                 self.CHive.set_sheet(self.profit_coin)
                 self.current_coin = self.profit_coin
-                self.current_watt = self.watt
-                self.current_revenue = self.revenue_profit
+                self.current_watt = self.profit_watt
+                self.current_revenue = self.profit_revenue
                 telegram_bot_sendtext(f"Set profit flightsheet {self.profit_coin}")
                 logger(f"Set profit flightsheet {self.profit_coin}", "info")
             

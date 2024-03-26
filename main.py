@@ -50,11 +50,17 @@ def main():
 
             for stack in Mining_Stacks:
                 stack.update_coin([coin for coin in coins if coin.minable])
+                if stack.profit_eur_per_kwh > 0.45:
+                    stack.profit_on = True
+                if stack.efficient_eur_per_kwh > 0.45:
+                    stack.profit_on = True
+            
+            
 
             logger("Usable Power: " + str(usable_power), "info")
             telegram_bot_sendtext("Usable Power: " + str(usable_power))
             if usable_power >= 0:  # turn on rigs
-                relevant_stacks = [(stack, stack.watt_efficient, stack.even_watt_rate) for stack in Mining_Stacks if (not stack.get_status() and not stack.always_on_stacks)]  # has to be off to be turned on
+                relevant_stacks = [(stack, stack.efficient_watt, stack.efficient_profit) for stack in Mining_Stacks if (not stack.get_status() and not stack.always_on_stacks)]  # has to be off to be turned on
                 if len(relevant_stacks) == 0:  # maybe even turn on profit over efficiency
                     for stack in Mining_Stacks:
                         if not stack.efficient_sheet:
@@ -79,7 +85,7 @@ def main():
                         stack.turn_on()
             else:  # turn off rigs
                 # switch from profit to efficiency
-                relevant_stacks = [(stack, stack.watt_efficient, stack.even_watt_rate) for stack in Mining_Stacks if (stack.get_status() and not stack.always_on_stacks)]  # has to be on to be turned off
+                relevant_stacks = [(stack, stack.efficient_watt, stack.efficient_profit) for stack in Mining_Stacks if (stack.get_status() and not stack.always_on_stacks)]  # has to be on to be turned off
 
                 for stack, _, _ in relevant_stacks:
                     if stack.efficient_sheet:
