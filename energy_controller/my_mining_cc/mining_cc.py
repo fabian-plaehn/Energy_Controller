@@ -123,7 +123,7 @@ if __name__ == "__main__":
     xmrig_H.set_sheet("QUBIC")
     
     xmrig_H = Cxmrig("H_FARM", ['DESKTOP-LIJOB68'])
-    xmrig_H.set_sheet("QUBIC")
+    xmrig_H.set_sheet("ZEPH")
     
     
 '''
