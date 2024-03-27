@@ -10,7 +10,8 @@ from energy_controller.hidden.hidden import WALLET_RTC, WALLET_ZEPH, WALLET_XDAG
 def get_RTC_JSON(**kargs):
     FARM_NAME = kargs["farm_name"]
     rig_id = kargs["rig_id"]
-    return {"miner_name":"RTC", 
+    return {"coin_name":"RTC", 
+            "miner_name":"xmrig-cc",
             "config":{"pools":[{"algo":"ghostrider", 
                                 "url":"stratum-eu.rplant.xyz:7054", 
                                 "user":WALLET_RTC[FARM_NAME]+"."+str(rig_id)}],
@@ -22,7 +23,8 @@ def get_RTC_JSON(**kargs):
 def get_ZEPH_JSON(**kargs):
     FARM_NAME = kargs["farm_name"]
     rig_id = kargs["rig_id"]
-    return {"miner_name":"ZEPH",
+    return {"coin_name":"ZEPH",
+            "miner_name":"xmrig-cc",
             "config":{"pools":[{"algo":None, 
                                 "url":"de.zephyr.herominers.com:1123", 
                                 "user":WALLET_ZEPH[FARM_NAME],
@@ -37,7 +39,8 @@ def get_ZEPH_JSON(**kargs):
 def get_XDAG_JSON(**kargs):
     FARM_NAME = kargs["farm_name"]
     rig_id = kargs["rig_id"]
-    return {"miner_name":"XDAG",
+    return {"coin_name":"XDAG",
+            "miner_name":"xmrig-cc",
             "config":{"pools":[{"algo":"rx/xdag", 
                                 "url":"stratum.xdag.org:23655", 
                                 "user":WALLET_XDAG[FARM_NAME],
@@ -50,7 +53,8 @@ def get_XDAG_JSON(**kargs):
 def get_YADA_JSON(**kargs):
     FARM_NAME = kargs["farm_name"]
     rig_id = kargs["rig_id"]
-    return {"miner_name":"YDA",
+    return {"coin_name":"YDA",
+            "miner_name":"xmrig-cc",
             "config":{"pools":[{"algo":"rx/yada", 
                                 "url":"yada.steadnet.net:3333", 
                                 "user":WALLET_YADA[FARM_NAME],
@@ -63,7 +67,9 @@ def get_YADA_JSON(**kargs):
 def get_QUBIC_JSON(**kargs):
     FARM_NAME = kargs["farm_name"]
     rig_id = kargs["rig_id"]
-    return {"miner_name":"QUBIC", "config":{"Settings":{"amountOfThreads": 22, 
+    return {"coin_name":"QUBIC",
+            "miner_name":"qli-Client",
+            "config":{"Settings":{"amountOfThreads": 22, 
                                                         "baseUrl":"https://mine.qubic.li/",
                                                         #"baseUrl":"https://ai.diyschool.ch/", 
                                                         "allowHwInfoCollect": True,
@@ -103,7 +109,7 @@ def run():
     xmrig_H.set_sheet("XDAG")
     
 if __name__ == "__main__":
-    xmrig_B = Cxmrig("B_FARM", ['rig0040DF', 'rig039E17', 'rig1C76F3', 'rig1C771C', 'rig1D1864',
+    '''xmrig_B = Cxmrig("B_FARM", ['rig0040DF', 'rig039E17', 'rig1C76F3', 'rig1C771C', 'rig1D1864',
                                 'rig3C086A',
                                 'rig3C08AB',
                                 'rig3C08BA',
@@ -120,10 +126,10 @@ if __name__ == "__main__":
     xmrig_B.set_sheet("QUBIC")
     
     xmrig_H = Cxmrig("H_FARM", ['rig0ED8D9' , 'rig12FCF8', 'rig12FD7E', 'rig39527C', 'rig40B8E1', 'rig40B93E', 'rig40B966', 'rig5E6D1A'])
-    xmrig_H.set_sheet("QUBIC")
+    xmrig_H.set_sheet("QUBIC")'''
     
     xmrig_H = Cxmrig("H_FARM", ['DESKTOP-LIJOB68'])
-    xmrig_H.set_sheet("ZEPH")
+    xmrig_H.set_sheet("QUBIC")
     
     
 '''

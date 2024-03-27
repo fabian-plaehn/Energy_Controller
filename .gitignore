@@ -2,3 +2,4 @@
 dataset
 energy_controller/hidden
 *pycache__
+*.pyc
