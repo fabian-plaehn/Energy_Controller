@@ -114,14 +114,13 @@ class CoinStatsBase:
             df.to_csv(f"dataset/{self.name}.txt", sep=",", index=False)
 
     def get_profitability(self):
-        print("get profit for :", self.name)
-        
         self.get_difficulty()
         self.get_price()
-
-        
-        if self.price is None or self.difficulty is None or self.hashrate == 0 or self.difficulty == 0:
+            
+        if self.price is None:
             self.price = 0
+        
+        if self.difficulty is None or self.hashrate == 0 or self.difficulty == 0:
             blocks_per_second = 0
         else:
             blocks_per_second = self.hashrate / self.difficulty
@@ -135,7 +134,7 @@ class CoinStatsBase:
         self.profit_per_watt = self.profitability / self.watt
         self.revenue = rev_per_day
         self.break_even_watt = break_even_watt_costs
-
+        
 
 def find_text(text, text_to_find):
     value = None
@@ -176,14 +175,17 @@ class YDAStats(CoinStatsBase):
             
 
     def get_difficulty(self):
-        self.driver.get("https://yadacoin.io/explorer")
-        WebDriverWait(self.driver, 5).until(ec.presence_of_element_located((By.XPATH, "/html/body/main/div/section/div/app-root/app-search-form/h3[3]")))
-        for _ in range(15):
-            difficulty = find_text(self.driver.find_element(by=By.XPATH, value="/html/body/main/div/section/div/app-root/app-search-form/h3[3]").text, "Difficulty: ")[0]
-            if difficulty is not None:
-                self.difficulty = difficulty
-                break
-            time.sleep(3)
+        try:
+            self.driver.get("https://yadacoin.io/explorer")
+            WebDriverWait(self.driver, 5).until(ec.presence_of_element_located((By.XPATH, "/html/body/main/div/section/div/app-root/app-search-form/h3[3]")))
+            for _ in range(15):
+                difficulty = find_text(self.driver.find_element(by=By.XPATH, value="/html/body/main/div/section/div/app-root/app-search-form/h3[3]").text, "Difficulty: ")[0]
+                if difficulty is not None:
+                    self.difficulty = difficulty
+                    break
+                time.sleep(3)
+        except:
+            self.difficulty = math.inf
         
 
 class AVN_Stats(CoinStatsBase):
@@ -371,9 +373,9 @@ yada = YDAStats()
 vishai = VishAIStats()
 qubic = QUBIC_Stats()
 
-rtc.minable = True
-xdag.minable = True
-zeph.minable = True
+rtc.minable = False
+xdag.minable = False
+zeph.minable = False
 qubic.minable = True
 yada.minable = False
 

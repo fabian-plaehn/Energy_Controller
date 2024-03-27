@@ -48,6 +48,7 @@ def main():
                 print(coin.name, coin.revenue, coin.profitability, coin.break_even_watt, coin.price, coin.network_hashrate, coin.difficulty)
                 telegram_bot_sendtext(f"{coin.name, coin.profitability, coin.break_even_watt}")
 
+            # TODO if profit above 0.45 eur/kwh turn on the rigs
             for stack in Mining_Stacks:
                 stack.update_coin([coin for coin in coins if coin.minable])
                 if stack.profit_eur_per_kwh > 0.45:
