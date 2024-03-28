@@ -92,7 +92,7 @@ Flight_Sheets = {
     "ZEPH":get_ZEPH_JSON,
     "XDAG":get_XDAG_JSON,
     "YDA":get_YADA_JSON,
-    "QUBIC":get_QUBIC_RQINER_JSON
+    "QUBIC":get_QUBIC_JSON
 }
 
 class Cxmrig:
