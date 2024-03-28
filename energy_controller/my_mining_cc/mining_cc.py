@@ -92,7 +92,7 @@ Flight_Sheets = {
     "ZEPH":get_ZEPH_JSON,
     "XDAG":get_XDAG_JSON,
     "YDA":get_YADA_JSON,
-    "QUBIC":get_QUBIC_RQINER_JSON
+    "QUBIC":get_QUBIC_JSON
 }
 
 class Cxmrig:
@@ -136,8 +136,8 @@ if __name__ == "__main__":
     xmrig_H = Cxmrig("H_FARM", ['rig0ED8D9' , 'rig12FCF8', 'rig12FD7E', 'rig39527C', 'rig40B8E1', 'rig40B93E', 'rig40B966', 'rig5E6D1A'])
     xmrig_H.set_sheet("QUBIC")'''
     
-    xmrig_H = Cxmrig("H_FARM", ['DESKTOP-LIJOB68'])
-    xmrig_H.set_sheet("ZEPH")
+    xmrig_H = Cxmrig("H_FARM", ['DESKTOP-LIJOB68', 'rig0040df'])
+    xmrig_H.set_sheet("QUBIC")
     
     
 '''
@@ -149,5 +149,5 @@ rm -rf home/user/project
 
 '''
 '''
-mkdir home/user/project && cd home/user/project && wget http://100.96.102.113:4999/linux/shell_script && chmod +x shell_script && ./shell_script
+mkdir home/user/projects && mkdir home/user/projects/mining_client && cd home/user/projects/mining_client && wget http://100.96.102.113:4999/linux/shell_script && chmod +x shell_script && ./shell_script
 '''
