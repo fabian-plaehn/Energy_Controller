@@ -3,7 +3,7 @@ import sys
 import time
 import requests
 import json
-from energy_controller.hidden.hidden import WALLET_RTC, WALLET_ZEPH, WALLET_XDAG, WALLET_YADA, xmrig_server_ip, WALLET_QUBIC
+from energy_controller.hidden.hidden import *
 #from utils import telegram_bot_sendtext
 
 
@@ -74,9 +74,17 @@ def get_QUBIC_JSON(**kargs):
                                                         #"baseUrl":"https://ai.diyschool.ch/", 
                                                         "allowHwInfoCollect": True,
                                                         "autoupdateEnabled": True,
-                                                        "accessToken":WALLET_QUBIC[FARM_NAME],
+                                                        "accessToken":WALLET_QUBIC_LI[FARM_NAME],
                                                         "alias":str(rig_id)}
                                             }
+            }
+    
+def get_QUBIC_RQINER_JSON(**kargs):
+    FARM_NAME = kargs["farm_name"]
+    rig_id = kargs["rig_id"]
+    return {"coin_name":"QUBIC",
+            "miner_name":"rqiner",
+            "config": {"--threads":"32",  "--id": WALLET_QUBIC[FARM_NAME], "--label":str(rig_id)}
             }
     
 Flight_Sheets = {
@@ -84,7 +92,7 @@ Flight_Sheets = {
     "ZEPH":get_ZEPH_JSON,
     "XDAG":get_XDAG_JSON,
     "YDA":get_YADA_JSON,
-    "QUBIC":get_QUBIC_JSON
+    "QUBIC":get_QUBIC_RQINER_JSON
 }
 
 class Cxmrig:
